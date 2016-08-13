@@ -1,7 +1,7 @@
 EMW-Sensor
 =========
 
-This is firmware for emw-board[1]. It can be used to perform measurements
+This is firmware for [emw-board][1]. It can be used to perform measurements
 with 1-wire sensors (temperature for example) and transmit results via wifi connection
 to MQTT server.
 
