@@ -2,19 +2,21 @@ EMW-Sensor
 =========
 
 This is firmware for emw-board[1]. It can be used to perform measurements
-with 1-wire sensors (temperature for example) and transmit it via wifi connection
+with 1-wire sensors (temperature for example) and transmit results via wifi connection
 to MQTT server.
 
 After loading the firmware to board, it is easiest to set up it
 by pressing the "setup" button during startup, which activates built-in
 access point (you'll see EMW3165nnnnnnn when scanning for APs). 
-Connnect to access point and use telnet to log in to 192.168.1.1.
+Connect to access point and use telnet to log in to 192.168.1.1.
 In _esh_ prompt setup the system:
 
+```
 esh> sta ap-name ap-password
 esh> mqtt --server mqtt-server-fqdn
 esh> wr
 esh> exit
+```
 
 After that, reset the board.
 
