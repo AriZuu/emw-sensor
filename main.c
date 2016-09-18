@@ -172,6 +172,7 @@ static void mainTask(void* arg)
 
   bool ap = false;
   int i;
+  posTaskSleep(MS(200)); // wait for setup button capacitor to charge.
   printf("Press button to activate AP.\n");
   for (i = 0; i < 10; i++) {
 
@@ -210,13 +211,13 @@ static void mainTask(void* arg)
   flashPowerdown();  // don't need spiffs after this, save 15 uA
   printf("Startup complete.\n");
 
-  wifiLed(true);
-  posTaskSleep(MS(100));
-  wifiLed(false);
-  posTaskSleep(MS(100));
-  wifiLed(true);
-  posTaskSleep(MS(100));
-  wifiLed(false);
+  for (i = 0; i < 3; i++) {
+
+    userLed(true);
+    posTaskSleep(MS(100));
+    userLed(false);
+    posTaskSleep(MS(100));
+  }
 
   float sleepTicks = 0;
   float busyTicks = 0;
@@ -321,7 +322,7 @@ int main(int argc, char **argv)
   GPIO_InitTypeDef GPIO_InitStructure;
 
   unusedPins();
-  wifiLedInit();
+  ledInit();
 
 #if PORTCFG_CON_USART == 2
 

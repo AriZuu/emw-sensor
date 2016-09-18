@@ -51,8 +51,9 @@ bool staUp(void);
 void staInit(void);
 void staDown(void);
 void setup(void);
-void wifiLedInit(void);
+void ledInit(void);
 void wifiLed(bool on);
+void userLed(bool on);
 void flashPowerdown(void);
 void flashPowerup(void);
 
