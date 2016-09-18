@@ -133,20 +133,6 @@ static void tcpipSuspend(void* arg)
   printf("Tcp/ip resume.\n");
 }
 
-static void enableWatchdog()
-{
-  IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-  IWDG_SetPrescaler(IWDG_Prescaler_256);
-  IWDG_SetReload(0xfff);
-  IWDG_ReloadCounter();
-  IWDG_Enable();
-}
-
-static void disableWatchdog()
-{
-  IWDG_Disable();
-}
-
 static void mainTask(void* arg)
 {
   sys_sem_t sem;
