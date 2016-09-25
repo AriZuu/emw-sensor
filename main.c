@@ -125,9 +125,28 @@ static void tcpipInitDone(void *arg)
 
 static void tcpipSuspend(void* arg)
 {
+  JIF_t before;
+  POS_LOCKFLAGS;
+
   printf("Tcp/ip suspend.\n");
   wifiLed(false);
+
+  /*
+   * Kludge alert: record jiffies value before putting tcp/ip stack
+   * to sleep. After wakeup, restore jiffies, otherwise lwip timers
+   * will get upset. Really not great, but makes things work until
+   * lwip timers can handle system sleep.
+   */
+  POS_SCHED_LOCK;
+  before = jiffies;
+  POS_SCHED_UNLOCK;
+
   posSemaGet(sendSema);
+
+  POS_SCHED_LOCK;
+  jiffies = before;
+  POS_SCHED_UNLOCK;
+
   wifiLed(true);
   sys_sem_signal((sys_sem_t*)arg);
   printf("Tcp/ip resume.\n");
