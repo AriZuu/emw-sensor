@@ -92,6 +92,7 @@ static void sensorThread(void* arg)
   char buf[30];
   float   value;
   Sensor* sensor;
+  bool sendNeeded = true;
 
   timerSema = posSemaCreate(0);
   timer     = posTimerCreate();
@@ -102,7 +103,6 @@ static void sensorThread(void* arg)
   while (true) {
 
     int historyMax = 0;
-    bool sendNeeded = false;
 
     posSemaGet(timerSema);
 
@@ -151,8 +151,11 @@ static void sensorThread(void* arg)
     owRelease(0);
     printf("Sensor count %d, history max %d, sendflag=%d\n", sensorCount, historyMax, (int)sendNeeded);
 
-    if (sendNeeded)
+    if (sendNeeded) {
+
+      sendNeeded = false;
       posSemaSignal(sendSema);
+    }
   }
 }
 
