@@ -136,8 +136,10 @@ bool staUp()
     return false;
   }
 
+  wifiLed(true);
   if (wwd_management_wifi_on(WICED_COUNTRY_FINLAND) != WWD_SUCCESS) {
 
+    wifiLed(false);
     printf("Cannot turn wifi on.\n");
     return false;
   }
@@ -147,10 +149,12 @@ bool staUp()
 
   if (wwd_wifi_join(&ssid, WICED_SECURITY_WPA2_MIXED_PSK, (uint8_t*)pass, strlen(pass), NULL) != WWD_SUCCESS) {
 
+    wifiLed(false);
     printf("Cannot join AP.\n");
     return false;
   }
 
+  wifiLed(false);
   printf("Join OK.\n");
 
   // Ensure that semaphore is not set yet

@@ -49,6 +49,9 @@
 #include "lwip/tcpip.h"
 #include "lwip/ip_addr.h"
 
+#include "lwip/priv/tcp_priv.h"
+
+
 #include "mjson.h"
 #include "wwd_management.h"
 #include "wwd_wifi.h"
@@ -123,17 +126,25 @@ static void tcpipInitDone(void *arg)
   sys_sem_signal(sem);
 }
 
+static void tcpipDrain()
+{
+  // Wait until there are no active connections.
+  // (ignore those in time_wait state).
+  while (tcp_active_pcbs) {
+
+    posTaskSleep(MS(250));
+  }
+}
+
 static void tcpipSuspend(void* arg)
 {
   printf("Tcp/ip suspend.\n");
-  wifiLed(false);
 
   posSemaGet(sendSema);
-  sys_restart_timeouts();
 
-  wifiLed(true);
-  sys_sem_signal((sys_sem_t*)arg);
   printf("Tcp/ip resume.\n");
+  sys_restart_timeouts();
+  sys_sem_signal((sys_sem_t*)arg);
 }
 
 static void mainTask(void* arg)
@@ -233,7 +244,6 @@ static void mainTask(void* arg)
     start = jiffies;
     tcpip_callback_with_block(tcpipSuspend, &sem, true);
     sys_sem_wait(&sem);
-    printf("Sending...\n");
 
     delta = jiffies - start;
     if (delta > 0)
@@ -246,8 +256,11 @@ static void mainTask(void* arg)
     if (staUp()) {
 
       potatoSend();
-      posTaskSleep(MS(1000));// allow tcp/ip dry
+
+      userLed(true);
+      tcpipDrain();
       staDown();
+      userLed(false);
     }
 
     sensorUnlock();
