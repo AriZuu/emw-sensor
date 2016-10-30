@@ -52,9 +52,9 @@ static PbClient client;
  */
 static int mqtt(EshContext* ctx)
 {
-  char* server   = eshNamedArg(ctx, "server", true);
-  char* location = eshNamedArg(ctx, "location", true);
-  char* topic    = eshNamedArg(ctx, "topic", true);
+  char* server   = eshNamedArg(ctx, "server", false);
+  char* location = eshNamedArg(ctx, "location", false);
+  char* topic    = eshNamedArg(ctx, "topic", false);
 
   eshCheckNamedArgsUsed(ctx);
   eshCheckArgsUsed(ctx);
@@ -70,6 +70,19 @@ static int mqtt(EshContext* ctx)
   if (topic != NULL)
     uosConfigSet("mqtt.topic", topic);
 
+  if (topic == NULL && location == NULL && server == NULL) {
+
+    const char* parm;
+
+    parm = uosConfigGet("mqtt.server");
+    eshPrintf(ctx, "Server: %s\n", parm ? parm : "<not set>");
+
+    parm = uosConfigGet("mqtt.topic");
+    eshPrintf(ctx, "Topic prefix: %s\n", parm ? parm : "<not set>");
+
+    parm = uosConfigGet("mqtt.location");
+    eshPrintf(ctx, "Location: %s\n", parm ? parm : "<not set>");
+  }
   return 0;
 }
 
@@ -96,6 +109,7 @@ void potatoInit()
 static char jsonBuf[1024];
 
 static int timeStep = MEAS_CYCLE / HZ;
+
 static struct json_attr_t jsonAttrs[] = {
 
   { "values", t_array,
@@ -105,11 +119,12 @@ static struct json_attr_t jsonAttrs[] = {
   { "timeStep", t_integer,
     .addr.integer = &timeStep,
   },
-  { "location", t_string,
-    .len = UOS_CONFIG_VALUESIZE,
-  },
   { "sensor", t_string,
     .addr.string = "temperature",
+  },
+#define LOCATION_ATTR 3
+  { "location", t_string,
+    .len = UOS_CONFIG_VALUESIZE,
   },
   {
     NULL
@@ -140,9 +155,9 @@ bool potatoSend()
   char addr[80];
   
   if (location == NULL)
-    jsonAttrs[2].attribute = NULL;
+    jsonAttrs[LOCATION_ATTR].attribute = NULL;
   else
-    jsonAttrs[2].addr.string = (char*)location;
+    jsonAttrs[LOCATION_ATTR].addr.string = (char*)location;
 
   if (server == NULL) {
 
