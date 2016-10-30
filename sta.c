@@ -252,6 +252,7 @@ const EshCommand clearCommand = {
 
 extern const EshCommand mqttCommand;
 extern const EshCommand apCommand;
+extern const EshCommand resetCommand;
 
 const EshCommand *eshCommandList[] = {
   &mqttCommand,
@@ -266,6 +267,7 @@ const EshCommand *eshCommandList[] = {
   &eshIfconfigCommand,
   &eshHelpCommand,
   &eshExitCommand,
+  &resetCommand,
   NULL
 };
 

@@ -65,6 +65,26 @@
 
 extern const UosRomFile romFiles[];
 
+static int systemReset(EshContext* ctx)
+{
+  eshCheckNamedArgsUsed(ctx);
+  eshCheckArgsUsed(ctx);
+  if (eshArgError(ctx) != EshOK)
+    return -1;
+
+  SCB->AIRCR = (0x5FA << SCB_AIRCR_VECTKEY_Pos)  // unlock key
+             | (1 << SCB_AIRCR_SYSRESETREQ_Pos); // reset request
+  return 0;
+}
+
+const EshCommand resetCommand = {
+  .flags = 0,
+  .name = "reset",
+  .help = "reset system",
+  .handler = systemReset
+};
+
+
 POSSEMA_t sendSema;
 
 void tcpServerThread(void*);
