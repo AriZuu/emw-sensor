@@ -52,21 +52,31 @@ static PbClient client;
  */
 static int mqtt(EshContext* ctx)
 {
-  char* server = eshNamedArg(ctx, "server", true);
+  char* server   = eshNamedArg(ctx, "server", true);
+  char* location = eshNamedArg(ctx, "location", true);
+  char* topic    = eshNamedArg(ctx, "topic", true);
 
   eshCheckNamedArgsUsed(ctx);
   eshCheckArgsUsed(ctx);
   if (eshArgError(ctx) != EshOK)
     return -1;
 
-  uosConfigSet("mqtt.server", server);
+  if (server != NULL)
+    uosConfigSet("mqtt.server", server);
+
+  if (location != NULL)
+    uosConfigSet("mqtt.location", location);
+
+  if (topic != NULL)
+    uosConfigSet("mqtt.topic", topic);
+
   return 0;
 }
 
 const EshCommand mqttCommand = {
   .flags = 0,
   .name = "mqtt",
-  .help = "--server servername configure mqtt client",
+  .help = "--server servername --topic topic-prefix --location location-id configure mqtt client",
   .handler = mqtt
 }; 
 
@@ -88,12 +98,18 @@ static char jsonBuf[1024];
 static int timeStep = MEAS_CYCLE / HZ;
 static struct json_attr_t jsonAttrs[] = {
 
-  { "temperature", t_array,
+  { "values", t_array,
     .addr.array.element_type = t_real,
     .addr.array.maxlen = MAX_HISTORY,
   },
   { "timeStep", t_integer,
     .addr.integer = &timeStep,
+  },
+  { "location", t_string,
+    .len = UOS_CONFIG_VALUESIZE,
+  },
+  { "sensor", t_string,
+    .addr.string = "temperature",
   },
   {
     NULL
@@ -119,8 +135,15 @@ static bool buildJson(Sensor* sensor)
 bool potatoSend()
 {
   const char* server = uosConfigGet("mqtt.server");
+  const char* topic  = uosConfigGet("mqtt.topic");
+  const char* location = (char*)uosConfigGet("mqtt.location");
   char addr[80];
   
+  if (location == NULL)
+    jsonAttrs[2].attribute = NULL;
+  else
+    jsonAttrs[2].addr.string = (char*)location;
+
   if (server == NULL) {
 
     printf("No MQTT server configured.\n");
@@ -144,7 +167,15 @@ bool potatoSend()
 
       pub.message = (uint8_t*)jsonBuf;
       pub.len = strlen(jsonBuf);
-      strcpy(addr, "test/");
+
+      if (topic == NULL)
+        strcpy(addr, "test/");
+      else {
+
+        strcpy(addr, topic);
+        strcat(addr, "/");
+      }
+
       sensorAddressStr(addr + strlen(addr), sensor->addr);
       pub.topic = addr;
 
