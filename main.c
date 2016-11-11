@@ -51,8 +51,6 @@
 
 #include "lwip/priv/tcp_priv.h"
 
-
-#include "mjson.h"
 #include "wwd_management.h"
 #include "wwd_wifi.h"
 #include "wwd_network.h"

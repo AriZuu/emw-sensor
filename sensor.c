@@ -120,7 +120,7 @@ static void sensorThread(void* arg)
       if (sensor == NULL)
         continue;
 
-      if (!ReadTemperature(0, serialNum, &value))
+      if (!ReadTemperature(0, serialNum, &value) || value >= 85.0)
         value = -273;
 
       sensorAddressStr(buf, serialNum);

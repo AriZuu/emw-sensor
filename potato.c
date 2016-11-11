@@ -35,12 +35,12 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
-#include "mjson.h"
 #include <eshell.h>
 
 #include "wwd_wifi.h"
 
 #include "potato-bus.h"
+#include "potato-json.h"
 #include "emw-sensor.h"
 
 extern wiced_mac_t   myMac;
@@ -107,41 +107,62 @@ void potatoInit()
 }
 
 static char jsonBuf[1024];
+static JsonContext jsonCtx;
 
-static int timeStep = MEAS_CYCLE / HZ;
-
-static struct json_attr_t jsonAttrs[] = {
-
-  { "values", t_array,
-    .addr.array.element_type = t_real,
-    .addr.array.maxlen = MAX_HISTORY,
-  },
-  { "timeStep", t_integer,
-    .addr.integer = &timeStep,
-  },
-  { "sensor", t_string,
-    .addr.string = "temperature",
-  },
-#define LOCATION_ATTR 3
-  { "location", t_string,
-    .len = UOS_CONFIG_VALUESIZE,
-  },
-  {
-    NULL
-  },
-};
-
-static bool buildJson(Sensor* sensor)
+static bool buildJson(const char* location)
 {
-  int s;
+  JsonNode* root;
 
-  jsonAttrs[0].addr.array.arr.reals.store = sensor->temperature;
-  jsonAttrs[0].addr.array.count           = &sensor->historyCount;
+  root = jsonGenerate(&jsonCtx, jsonBuf, sizeof(jsonBuf));
 
-  s = json_write_object(jsonBuf, jsonAttrs, sizeof(jsonBuf));
-  sensor->historyCount = 0;
+  JsonNode* top;
 
-  if (s != 0)
+  top = jsonStartObject(root);
+  jsonWriteKey(top, "timeStep");
+  jsonWriteInteger(top, MEAS_CYCLE / HZ);
+
+  jsonWriteKey(top, "locations");
+
+  {
+    JsonNode* locations;
+
+    locations = jsonStartObject(top);
+    jsonWriteKey(locations, location);
+
+    {
+      JsonNode* s;
+      Sensor* sensor;
+      int ns;
+      char name[40];
+
+      s = jsonStartObject(locations);
+      sensor = sensorList;
+      for (ns = 0; ns < sensorCount; ns++, sensor++) {
+
+        strcpy(name, "temperature");
+        if (ns > 0)
+          sprintf(name + strlen(name), "%d", ns);
+
+        jsonWriteKey(s, name);
+
+        {
+          JsonNode* values;
+          int i;
+
+          values = jsonStartArray(s);
+
+          for (i = 0; i < sensor->historyCount; i++)
+            jsonWriteDouble(values, sensor->temperature[i]);
+
+          sensor->historyCount = 0;
+        }
+      }
+    }
+  }
+
+  jsonGenerateFlush(top);
+
+  if (jsonFailed(&jsonCtx))
     return false;
 
   return true;
@@ -155,9 +176,7 @@ bool potatoSend()
   char addr[80];
   
   if (location == NULL)
-    jsonAttrs[LOCATION_ATTR].attribute = NULL;
-  else
-    jsonAttrs[LOCATION_ATTR].addr.string = (char*)location;
+    location = "somewhere";
 
   if (server == NULL) {
 
@@ -172,30 +191,21 @@ bool potatoSend()
   }
 
   PbPublish pub = {};
-  Sensor* sensor;
-  int i;
 
-  sensor = sensorList;
-  for (i = 0; i < sensorCount; i++, sensor++) {
+  if (buildJson(location)) {
 
-    if (buildJson(sensor)) {
+    pub.message = (uint8_t*)jsonBuf;
+    pub.len = strlen(jsonBuf);
 
-      pub.message = (uint8_t*)jsonBuf;
-      pub.len = strlen(jsonBuf);
+    if (topic == NULL)
+      strcpy(addr, "test");
+    else {
 
-      if (topic == NULL)
-        strcpy(addr, "test/");
-      else {
-
-        strcpy(addr, topic);
-        strcat(addr, "/");
-      }
-
-      sensorAddressStr(addr + strlen(addr), sensor->addr);
-      pub.topic = addr;
-
-      pbPublish(&client, &pub);
+      strcpy(addr, topic);
     }
+
+    pub.topic = addr;
+    pbPublish(&client, &pub);
   }
 
   pbDisconnect(&client);
