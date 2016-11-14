@@ -274,7 +274,7 @@ static void mainTask(void* arg)
     if (staUp()) {
 
       potatoSend();
-
+      waitSystemTime();
       userLed(true);
       tcpipDrain();
       staDown();

@@ -32,6 +32,7 @@
 #define LWIP_LWIPOPTS_H
 
 #include "network/wwd_network_constants.h"
+#include <time.h>
 
 #define SYS_LIGHTWEIGHT_PROT 1
 
@@ -88,6 +89,13 @@ int sys_random(void);
 #define LWIP_RAND() sys_random()
 #define LWIP_COMPAT_SOCKETS		0
 
+void setSystemTime(time_t);
+
+#define SNTP_SET_SYSTEM_TIME(t) setSystemTime(t)
+#define LWIP_DHCP_GET_NTP_SRV 1
+// need one more timeout for ntp
+#define MEMP_NUM_SYS_TIMEOUT 7
+
 #define WDCFG_FIRMWARE "43362A2.bin"
 #define WDCFG_FIRMWARE_PATH "/firmware", "/flash"
 
@@ -99,6 +107,7 @@ int sys_random(void);
 //#define ICMP_DEBUG       LWIP_DBG_ON
 //#define DHCP_DEBUG LWIP_DBG_ON
 //#define ETHARP_DEBUG LWIP_DBG_ON
+//#define SNTP_DEBUG LWIP_DBG_O
 //#define LWIP_DBG_TYPES_ON 0xff
 
 #endif

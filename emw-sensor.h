@@ -32,8 +32,11 @@
 #include "lwip/netif.h"
 
 #define MAX_SENSORS 2
-#define MAX_HISTORY 6
-#define MEAS_CYCLE MS(5 * 60 * 1000)
+
+#define MEAS_CYCLE_SECS (5 * 60)
+#define SEND_CYCLE_SECS (30 * 60)
+
+#define MAX_HISTORY (1 + (SEND_CYCLE_SECS / MEAS_CYCLE_SECS))
 
 typedef struct {
 
@@ -57,12 +60,16 @@ void userLed(bool on);
 void flashPowerdown(void);
 void flashPowerup(void);
 
+void waitSystemTime(void);
+
 void sensorInit(void);
 void sensorLock(void);
 void sensorUnlock(void);
 void sensorAddressStr(char* buf, uint8_t* addr);
+void sensorCycleReset(const struct timeval* tv);
 
 extern Sensor sensorList[];
 extern int    sensorCount;
+extern time_t sensorTime;
 extern POSSEMA_t sendSema;
 

@@ -36,11 +36,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <fcntl.h>
+#include <sys/time.h>
 
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/sys.h"
 #include "lwip/dns.h"
+#include "lwip/apps/sntp.h"
 
 #include "lwip/stats.h"
 #include "lwip/inet.h"
@@ -112,10 +114,58 @@ void ifStatusCallback(struct netif *netif)
 }
 
 struct netif defaultIf;
+static POSSEMA_t sntpSema;
+static time_t lastNtp = 0;
 
 void staInit()
 {
   ready = posSemaCreate(0);
+  sntpSema = posSemaCreate(0);
+}
+
+void setSystemTime(time_t t)
+{
+  struct timeval tv;
+  char buf[30];
+
+  if (lastNtp == 0)
+    sys_random_init(t);
+
+  gettimeofday(&tv, NULL);
+
+  // Adjust wall clock time if difference is more than
+  // one second or more than 24 hours have passed since last
+  // adjustment.
+  if (abs(tv.tv_sec - t) > 1 || abs(t - lastNtp) > 3600 * 24) {
+
+    lastNtp = t;
+    tv.tv_sec = t;
+    tv.tv_usec = 0;
+    settimeofday(&tv, NULL);
+
+    gettimeofday(&tv, NULL);
+    ctime_r(&tv.tv_sec, buf);
+    printf("Clock set to %s", buf);
+
+    sensorCycleReset(&tv);
+  }
+
+  posSemaSignal(sntpSema);
+}
+
+void waitSystemTime()
+{
+  posSemaWait(sntpSema, MS(2000));
+}
+
+static void sntpStartStop(void* arg)
+{
+  bool flag = (bool)arg;
+
+  if (flag)
+    sntp_init();
+  else
+    sntp_stop();
 }
 
 bool staUp()
@@ -162,6 +212,7 @@ bool staUp()
 
   netifapi_netif_set_up(&defaultIf);
   netif_set_status_callback(&defaultIf, ifStatusCallback);
+  sntp_servermode_dhcp(1);
   netifapi_dhcp_start(&defaultIf);
 
 #if LWIP_IPV6
@@ -177,11 +228,21 @@ bool staUp()
     return false;
   }
 
+  // Ensure that semaphore is not set yet
+  while (posSemaWait(sntpSema, 0) == 0);
+  if (!ip_addr_isany(sntp_getserver(0))) {
+
+    tcpip_callback_with_block(sntpStartStop, (void*)true, true);
+  }
+  else
+    posSemaSignal(sntpSema);
+
   return true;
 }
 
 void staDown()
 {
+  tcpip_callback_with_block(sntpStartStop, (void*)false, true);
   netifapi_dhcp_release(&defaultIf);
   netifapi_dhcp_stop(&defaultIf);
   netifapi_netif_set_down(&defaultIf);

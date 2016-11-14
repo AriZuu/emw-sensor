@@ -112,6 +112,8 @@ static JsonContext jsonCtx;
 static bool buildJson(const char* location)
 {
   JsonNode* root;
+  char      timeStamp[40];
+  struct tm* t;
 
   root = jsonGenerate(&jsonCtx, jsonBuf, sizeof(jsonBuf));
 
@@ -119,7 +121,16 @@ static bool buildJson(const char* location)
 
   top = jsonStartObject(root);
   jsonWriteKey(top, "timeStep");
-  jsonWriteInteger(top, MEAS_CYCLE / HZ);
+  jsonWriteInteger(top, MEAS_CYCLE_SECS);
+
+  t = gmtime(&sensorTime);
+
+  if (t->tm_year > 100) {
+
+    strftime(timeStamp, sizeof(timeStamp), "%FT%TZ", t);
+    jsonWriteKey(top, "timeStamp");
+    jsonWriteString(top, timeStamp);
+  }
 
   jsonWriteKey(top, "locations");
 

@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/time.h>
 #include "emw-sensor.h"
 
 #include <picoos-ow.h>
@@ -56,6 +57,7 @@ static POSTIMER_t timer;
 
 Sensor     sensorList[MAX_SENSORS];
 int        sensorCount;
+time_t     sensorTime;
 
 static Sensor* getSensor(uint8_t* addr)
 {
@@ -85,6 +87,19 @@ static Sensor* getSensor(uint8_t* addr)
   return sensor;
 }
 
+void sensorCycleReset(const struct timeval* now)
+{
+  time_t next;
+  int    delay;
+
+  next = (now->tv_sec / MEAS_CYCLE_SECS) * MEAS_CYCLE_SECS + MEAS_CYCLE_SECS;
+  delay = next - now->tv_sec;
+  
+  delay = delay * 1000;
+  posTimerSet(timer, timerSema, MS(delay), MS(MEAS_CYCLE_SECS * 1000));
+  posTimerStart(timer);
+}
+
 static void sensorThread(void* arg)
 {
   int	  result;
@@ -93,11 +108,12 @@ static void sensorThread(void* arg)
   float   value;
   Sensor* sensor;
   bool sendNeeded = true;
+  time_t  now;
 
   timerSema = posSemaCreate(0);
   timer     = posTimerCreate();
 
-  posTimerSet(timer, timerSema, MS(10000), MEAS_CYCLE);
+  posTimerSet(timer, timerSema, MS(10000), MS(MEAS_CYCLE_SECS * 1000));
   posTimerStart(timer);
 
   while (true) {
@@ -105,6 +121,13 @@ static void sensorThread(void* arg)
     int historyMax = 0;
 
     posSemaGet(timerSema);
+
+    time(&now);
+    now = (now / MEAS_CYCLE_SECS) * MEAS_CYCLE_SECS;
+    if ((now % SEND_CYCLE_SECS) == 0)
+      sendNeeded = true;
+
+    sensorTime = now;
 
     if (!owAcquire(0, NULL)) {
 
@@ -149,11 +172,21 @@ static void sensorThread(void* arg)
     }
 
     owRelease(0);
+
     printf("Sensor count %d, history max %d, sendflag=%d\n", sensorCount, historyMax, (int)sendNeeded);
 
     if (sendNeeded) {
 
+      int randomSleep;
+
       sendNeeded = false;
+      
+      // Random delay before sending. If we have multiple
+      // sensor units running this will spread the load 
+      // in the receiving end.
+      randomSleep = sys_random() % MS(2000);
+      posTaskSleep(randomSleep);
+
       posSemaSignal(sendSema);
     }
   }
