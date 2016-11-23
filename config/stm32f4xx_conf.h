@@ -45,6 +45,7 @@
 #include "stm32f4xx_exti.h"
 #include "stm32f4xx_pwr.h"
 #include "stm32f4xx_flash.h"
+#include "stm32f4xx_adc.h"
 #include "misc.h"
 
 #define assert_param(expr) ((void)0)

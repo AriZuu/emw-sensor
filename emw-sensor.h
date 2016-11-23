@@ -69,6 +69,7 @@ void sensorAddressStr(char* buf, uint8_t* addr);
 void sensorCycleReset(const struct timeval* tv);
 
 extern Sensor sensorList[];
+extern float battery;
 extern int    sensorCount;
 extern time_t sensorTime;
 extern POSSEMA_t sendSema;

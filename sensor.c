@@ -64,8 +64,9 @@ static Sensor* getSensor(uint8_t* addr)
   int i;
   Sensor* sensor;
 
-  sensor = sensorList;
-  for (i = 0; i < sensorCount; i++, sensor++) {
+  sensor = sensorList + 1;
+  // slot 0 is battery voltage
+  for (i = 1; i < sensorCount; i++, sensor++) {
 
     if (!memcmp(addr, sensor->addr, sizeof(sensor->addr)))
       return sensor;
@@ -100,6 +101,24 @@ void sensorCycleReset(const struct timeval* now)
   posTimerStart(timer);
 }
 
+float battery;
+
+static void readBattery()
+{
+  ADC_SoftwareStartConv(ADC1);
+
+  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC ) == RESET) {
+  }
+
+
+  int result;
+
+  result = ADC_GetConversionValue(ADC1);
+
+  battery = result * 3.3 / 4096;
+  printf ("Battery=%f V\n", battery);
+}
+
 static void sensorThread(void* arg)
 {
   int	  result;
@@ -128,6 +147,27 @@ static void sensorThread(void* arg)
       sendNeeded = true;
 
     sensorTime = now;
+
+    readBattery();
+    sensor = sensorList;
+    sensorLock();
+    if (sensor->historyCount >= MAX_HISTORY) {
+
+#if MAX_HISTORY > 1
+      memmove(sensor->temperature, sensor->temperature + 1, (MAX_HISTORY - 1) * sizeof(double));
+#endif
+      sensor->historyCount--;
+      printf("Sensor history was full.\n");
+    }
+
+    sensor->temperature[sensor->historyCount++] = battery;
+    if (sensor->historyCount > historyMax)
+      historyMax = sensor->historyCount;
+
+    if (sensor->historyCount == MAX_HISTORY)
+      sendNeeded = true;
+
+    sensorUnlock();
 
     if (!owAcquire(0, NULL)) {
 
@@ -195,7 +235,49 @@ static void sensorThread(void* arg)
 void sensorInit()
 {
   GPIO_InitTypeDef GPIO_InitStructure;
+  ADC_InitTypeDef adcInit;
+  ADC_CommonInitTypeDef adcCommonInit;
 
+  sensorCount = 1; // we always have battery
+
+// ADC init
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+// see errata 2.1.6
+  GPIO_ReadInputData(GPIOA);
+  GPIO_ReadInputData(GPIOA);
+
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  RCC_APB2PeriphClockCmd( RCC_APB2Periph_ADC1 , ENABLE);
+
+  ADC_CommonStructInit(&adcCommonInit);
+  adcCommonInit.ADC_Mode             = ADC_Mode_Independent;
+  adcCommonInit.ADC_DMAAccessMode    = ADC_DMAAccessMode_Disabled;
+  adcCommonInit.ADC_Prescaler        = ADC_Prescaler_Div2;
+  adcCommonInit.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
+  ADC_CommonInit(&adcCommonInit);
+
+  ADC_StructInit(&adcInit);
+
+  adcInit.ADC_Resolution         = ADC_Resolution_12b;
+  adcInit.ADC_ScanConvMode       = DISABLE;
+  adcInit.ADC_ContinuousConvMode = DISABLE;
+  adcInit.ADC_ExternalTrigConv   = ADC_ExternalTrigConvEdge_None;
+  adcInit.ADC_DataAlign          = ADC_DataAlign_Right;
+  adcInit.ADC_NbrOfConversion    = 1;
+  ADC_Init(ADC1, &adcInit);
+
+  ADC_RegularChannelConfig(ADC1, ADC_Channel_5, 1, ADC_SampleTime_3Cycles);
+  ADC_Cmd(ADC1, ENABLE);
+
+// 1-wire bus
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 // see errata 2.1.6
   GPIO_ReadInputData(GPIOB);

@@ -299,7 +299,6 @@ static void unusedPins()
 
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 /* Wifi wake up MCU ? */
                               | GPIO_Pin_1
-                              | GPIO_Pin_5
                               | GPIO_Pin_10
                               | GPIO_Pin_11
                               | GPIO_Pin_12;

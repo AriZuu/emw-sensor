@@ -113,6 +113,7 @@ static bool buildJson(const char* location)
 {
   JsonNode* root;
   char      timeStamp[40];
+  char name[40];
   struct tm* t;
 
   root = jsonGenerate(&jsonCtx, jsonBuf, sizeof(jsonBuf));
@@ -144,15 +145,14 @@ static bool buildJson(const char* location)
       JsonNode* s;
       Sensor* sensor;
       int ns;
-      char name[40];
 
       s = jsonStartObject(locations);
-      sensor = sensorList;
-      for (ns = 0; ns < sensorCount; ns++, sensor++) {
+      sensor = sensorList + 1;
+      for (ns = 1; ns < sensorCount; ns++, sensor++) {
 
         strcpy(name, "temperature");
-        if (ns > 0)
-          sprintf(name + strlen(name), "%d", ns);
+        if (ns > 1)
+          sprintf(name + strlen(name), "%d", ns - 1);
 
         jsonWriteKey(s, name);
 
@@ -167,6 +167,33 @@ static bool buildJson(const char* location)
 
           sensor->historyCount = 0;
         }
+      }
+    }
+
+    strcpy(name, location);
+    strcat(name, "-");
+    strcat(name, "sensor");
+    jsonWriteKey(locations, name);
+
+    {
+      JsonNode* s;
+      Sensor* sensor;
+
+      s = jsonStartObject(locations);
+      sensor = sensorList;
+
+      jsonWriteKey(s, "battery");
+
+      {
+        JsonNode* values;
+        int i;
+
+        values = jsonStartArray(s);
+
+        for (i = 0; i < sensor->historyCount; i++)
+          jsonWriteDouble(values, sensor->temperature[i]);
+
+        sensor->historyCount = 0;
       }
     }
   }
