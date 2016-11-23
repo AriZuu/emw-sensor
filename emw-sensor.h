@@ -33,8 +33,8 @@
 
 #define MAX_SENSORS 2
 
-#define MEAS_CYCLE_SECS (5 * 60)
-#define SEND_CYCLE_SECS (30 * 60)
+#define MEAS_CYCLE_SECS (10 * 60)
+#define SEND_CYCLE_SECS (60 * 60)
 
 #define MAX_HISTORY (1 + (SEND_CYCLE_SECS / MEAS_CYCLE_SECS))
 
