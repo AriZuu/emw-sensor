@@ -148,26 +148,7 @@ static void sensorThread(void* arg)
 
     sensorTime = now;
 
-    readBattery();
-    sensor = sensorList;
-    sensorLock();
-    if (sensor->historyCount >= MAX_HISTORY) {
-
-#if MAX_HISTORY > 1
-      memmove(sensor->temperature, sensor->temperature + 1, (MAX_HISTORY - 1) * sizeof(double));
-#endif
-      sensor->historyCount--;
-      printf("Sensor history was full.\n");
-    }
-
-    sensor->temperature[sensor->historyCount++] = battery;
-    if (sensor->historyCount > historyMax)
-      historyMax = sensor->historyCount;
-
-    if (sensor->historyCount == MAX_HISTORY)
-      sendNeeded = true;
-
-    sensorUnlock();
+    ADC_Cmd(ADC1, ENABLE); // Enable ADC now so it has time to settle.
 
     if (!owAcquire(0, NULL)) {
 
@@ -212,6 +193,29 @@ static void sensorThread(void* arg)
     }
 
     owRelease(0);
+
+    readBattery();
+    ADC_Cmd(ADC1, DISABLE);
+
+    sensor = sensorList;
+    sensorLock();
+    if (sensor->historyCount >= MAX_HISTORY) {
+
+#if MAX_HISTORY > 1
+      memmove(sensor->temperature, sensor->temperature + 1, (MAX_HISTORY - 1) * sizeof(double));
+#endif
+      sensor->historyCount--;
+      printf("Sensor history was full.\n");
+    }
+
+    sensor->temperature[sensor->historyCount++] = battery;
+    if (sensor->historyCount > historyMax)
+      historyMax = sensor->historyCount;
+
+    if (sensor->historyCount == MAX_HISTORY)
+      sendNeeded = true;
+
+    sensorUnlock();
 
     printf("Sensor count %d, history max %d, sendflag=%d\n", sensorCount, historyMax, (int)sendNeeded);
 
@@ -275,7 +279,6 @@ void sensorInit()
   ADC_Init(ADC1, &adcInit);
 
   ADC_RegularChannelConfig(ADC1, ADC_Channel_5, 1, ADC_SampleTime_3Cycles);
-  ADC_Cmd(ADC1, ENABLE);
 
 // 1-wire bus
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
