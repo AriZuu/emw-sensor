@@ -105,7 +105,6 @@ float battery;
 
 static void readBattery()
 {
-  ADC_Cmd(ADC1, ENABLE);
   ADC_SoftwareStartConv(ADC1);
 
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC ) == RESET) {
@@ -115,9 +114,8 @@ static void readBattery()
   int result;
 
   result = ADC_GetConversionValue(ADC1);
-  ADC_Cmd(ADC1, DISABLE);
 
-  battery = result * 3.3 / 4096;
+  battery = result * 3.3 / 256;
   printf ("Battery=%f V\n", battery);
 }
 
@@ -268,7 +266,7 @@ void sensorInit()
 
   ADC_StructInit(&adcInit);
 
-  adcInit.ADC_Resolution         = ADC_Resolution_12b;
+  adcInit.ADC_Resolution         = ADC_Resolution_8b;
   adcInit.ADC_ScanConvMode       = DISABLE;
   adcInit.ADC_ContinuousConvMode = DISABLE;
   adcInit.ADC_ExternalTrigConv   = ADC_ExternalTrigConvEdge_None;
@@ -277,6 +275,7 @@ void sensorInit()
   ADC_Init(ADC1, &adcInit);
 
   ADC_RegularChannelConfig(ADC1, ADC_Channel_5, 1, ADC_SampleTime_3Cycles);
+  ADC_Cmd(ADC1, ENABLE);
 
 // 1-wire bus
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
