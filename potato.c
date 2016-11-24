@@ -171,8 +171,7 @@ static bool buildJson(const char* location)
     }
 
     strcpy(name, location);
-    strcat(name, "-");
-    strcat(name, "sensor");
+    strcat(name, "Node");
     jsonWriteKey(locations, name);
 
     {
