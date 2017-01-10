@@ -85,8 +85,6 @@
 #define TCP_SND_QUEUELEN                6
 #define MEMP_NUM_TCP_SEG                16
 
-int sys_random(void);
-#define LWIP_RAND() sys_random()
 #define LWIP_COMPAT_SOCKETS		0
 
 void setSystemTime(time_t);
