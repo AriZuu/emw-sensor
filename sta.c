@@ -197,7 +197,7 @@ bool staUp()
   strcpy((char*)ssid.value, ap);
   ssid.length = strlen(ap);
 
-  if (wwd_wifi_join(&ssid, WICED_SECURITY_WPA2_MIXED_PSK, (uint8_t*)pass, strlen(pass), NULL) != WWD_SUCCESS) {
+  if (wwd_wifi_join(&ssid, WICED_SECURITY_WPA2_MIXED_PSK, (uint8_t*)pass, strlen(pass), NULL, WWD_STA_INTERFACE) != WWD_SUCCESS) {
 
     wifiLed(false);
     printf("Cannot join AP.\n");
