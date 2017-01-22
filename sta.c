@@ -194,6 +194,7 @@ bool staUp()
     return false;
   }
 
+  wifiLed(false);
   strcpy((char*)ssid.value, ap);
   ssid.length = strlen(ap);
 
@@ -204,7 +205,6 @@ bool staUp()
     return false;
   }
 
-  wifiLed(false);
   printf("Join OK.\n");
 
   // Ensure that semaphore is not set yet
