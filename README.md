@@ -13,7 +13,7 @@ In _esh_ prompt setup the system:
 
 ```
 esh> sta ap-name ap-password
-esh> mqtt --server mqtt-server-fqdn
+esh> mqtt --server mqtt-server-fqdn --topic sensordata --location kitchen
 esh> wr
 esh> exit
 ```
