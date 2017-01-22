@@ -171,7 +171,7 @@ static void mainTask(void* arg)
 
   uosInit();
   uosBootDiag();
-
+  printf("WICED SDK %s\n", WICED_SDK_VERSION);
   devTreeInit();
 
   flashPowerup(); // ensure that flash chip is not in deep powerdown
