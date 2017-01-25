@@ -96,6 +96,41 @@ const EshCommand mqttCommand = {
 static char clientId[20];
 static PbConnect connectArgs;
 
+#if POTATO_TLS
+
+static int getCertData(const char* fn, const unsigned char** buf)
+{
+  UosFile* f;
+  UosFileInfo info;
+
+  *buf = NULL;
+
+  f = uosFileOpen(fn, 0, 0);
+  if (f == NULL)
+    return -1;
+
+  if (uosFileFStat(f, &info) != -1)
+    *buf = (const unsigned char*)uosFileMap(f, 0);
+
+  uosFileClose(f);
+
+  if (*buf == NULL)
+    return -1;
+
+  return info.size;
+}
+
+static mbedtls_ssl_config       sslConf;
+static mbedtls_entropy_context  entropy;
+static mbedtls_ctr_drbg_context ctrDrbg;
+static mbedtls_x509_crt    caCert;
+static mbedtls_x509_crt    cliCert;
+static mbedtls_pk_context  privKey;
+
+
+#endif
+
+
 void potatoInit()
 {
     sprintf(clientId, "EMW%02x%02x%02x%02x%02x%02x", myMac.octet[0],
@@ -104,6 +139,82 @@ void potatoInit()
 
     connectArgs.clientId = clientId;
     connectArgs.keepAlive= 60;
+
+#if POTATO_TLS
+
+  int st;
+  const uint8_t* cert;
+  int certLen;
+
+  mbedtls_ssl_config_init(&sslConf);
+
+  mbedtls_x509_crt_init(&caCert);
+  mbedtls_x509_crt_init(&cliCert);
+  mbedtls_pk_init(&privKey);
+
+  mbedtls_ssl_conf_authmode(&sslConf, MBEDTLS_SSL_VERIFY_NONE);
+  certLen = getCertData("/firmware/rootCA.der", &cert);
+  if (certLen > 0) {
+
+    st = mbedtls_x509_crt_parse(&caCert, cert, certLen);
+    if (st == 0) {
+
+      mbedtls_ssl_conf_ca_chain(&sslConf, &caCert, NULL);
+      mbedtls_ssl_conf_authmode(&sslConf, MBEDTLS_SSL_VERIFY_REQUIRED);
+    }
+    else
+      printf("rootCA.der error 0x%x\n", st);
+  }
+
+  mbedtls_ctr_drbg_init(&ctrDrbg);
+  mbedtls_entropy_init(&entropy);
+
+  st = mbedtls_ctr_drbg_seed(&ctrDrbg,
+                             mbedtls_entropy_func,
+                             &entropy,
+                             (const unsigned char*)"potato", 6);
+
+  if (st != 0)
+    printf("entropy error 0x%x\n", st);
+
+  st = mbedtls_ssl_config_defaults(&sslConf,
+                                   MBEDTLS_SSL_IS_CLIENT,
+                                   MBEDTLS_SSL_TRANSPORT_STREAM,
+                                   MBEDTLS_SSL_PRESET_DEFAULT);
+  if (st != 0)
+    printf("config defaults error 0x%x\n", st);
+
+
+  certLen = getCertData("/firmware/cert.der", &cert);
+  if (certLen > 0) {
+
+    st = mbedtls_x509_crt_parse(&cliCert, cert, certLen);
+    if (st == 0) {
+
+      certLen = getCertData("/firmware/privkey.der", &cert);
+      if (certLen > 0) {
+
+        st = mbedtls_pk_parse_key(&privKey, cert, certLen, NULL, 0);
+        if (st == 0) {
+
+          st = mbedtls_ssl_conf_own_cert(&sslConf, &cliCert, &privKey);
+          if (st != 0)
+            printf("set own cert error 0x%x\n", st);
+        }
+        else
+          printf("private key error 0x%x\n", st);
+      }
+      else
+        printf("no private key\n");
+    }
+    else
+      printf("cert.der error 0x%x\n", st);
+  }
+
+  mbedtls_ssl_conf_rng(&sslConf, mbedtls_ctr_drbg_random, &ctrDrbg);
+  printf("SSL config done.\n");
+#endif
+
 }
 
 static char jsonBuf[1024];
@@ -221,7 +332,13 @@ bool potatoSend()
     return false;
   }
 
-  if (pbConnect(&client, server, "1883", &connectArgs) < 0) {
+#if POTATO_TLS
+
+  connectArgs.sslConf = &sslConf;
+
+#endif
+
+  if (pbConnectURL(&client, server, &connectArgs) < 0) {
 
     printf("potato: connect failed.\n");
     return false;

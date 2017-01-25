@@ -392,6 +392,6 @@ int main(int argc, char **argv)
   PWR->CR  &= ~PWR_CR_PDDS;
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
-  nosInit(mainTask, NULL, 1, 5000, 512);
+  nosInit(mainTask, NULL, 1, 8000, 512);
   return 0;
 }

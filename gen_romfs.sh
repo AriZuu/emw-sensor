@@ -27,8 +27,22 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
-cd $WICED_SDK/resources/firmware/$WICED_CHIP
-FILES="$WICED_CHIP$WICED_CHIP_REVISION.bin"
+FILES="$WICED_SDK/resources/firmware/$WICED_CHIP/$WICED_CHIP$WICED_CHIP_REVISION.bin"
+
+if [ -f cert/cert.der ]
+then
+   FILES="$FILES cert/cert.der"
+fi
+
+if [ -f cert/rootCA.der ]
+then
+   FILES="$FILES cert/rootCA.der"
+fi
+
+if [ -f cert/privkey.der ]
+then
+   FILES="$FILES cert/privkey.der"
+fi
 
 echo "#include <picoos.h>"
 echo "#include <picoos-u.h>"
@@ -47,7 +61,7 @@ do
    FILENO=`expr $FILENO + 1`
    echo "// $F"
    case $F in
-   *.jpg|*.png|*.gif|*.bin)
+   *.der|*.jpg|*.png|*.gif|*.bin)
       CAT=cat ;;
    *)
       CAT="gzip -c" ;;
@@ -69,12 +83,13 @@ for F in $FILES
 do
    FILENO=`expr $FILENO + 1`
    case $F in
-   *.jpg|*.png|*.gif|*.bin)
+   *.der|*.jpg|*.png|*.gif|*.bin)
       GZIP="" ;;
    *)
       GZIP=".gz" ;;
    esac
 
+   F=`basename $F`
    echo "{ \"$F$GZIP\", file_$FILENO, sizeof(file_$FILENO) },"
 done
 

@@ -75,7 +75,7 @@ MODULES += ../picoos-lwip ../wiced-driver ../eshell ../picoos-ow ../potato-bus
 
 DIR_CONFIG = $(CURRENTDIR)/config
 DIR_OUTPUT = $(CURRENTDIR)/bin
-MODULES +=  ../picoos-micro ../picoos-micro-spiffs
+MODULES +=  ../picoos-micro ../picoos-micro-spiffs  ../picoos-mbedtls
 
 POSTLINK1 = arm-none-eabi-size $(TARGETOUT)
 
