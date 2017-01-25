@@ -13,10 +13,19 @@ In _esh_ prompt setup the system:
 
 ```
 esh> sta ap-name ap-password
-esh> mqtt --server mqtt-server-fqdn --topic sensordata --location kitchen
+esh> mqtt --server=mqtt://mqtt-server-fqdn --topic sensordata --location kitchen
 esh> wr
 esh> exit
 ```
+
+Or, to publish data to Amazon IOT MQTT:
+
+```
+esh> mqtt --server=mqtts://nnnnnnnnnnnn.iot.eu-west-1.amazonaws.com --topic sensordata --location kitchen
+```
+
+Certificates provided by Amazon should be placed into cert directory (in DER format) to be picked
+up by build.
 
 After that, reset the board.
 
