@@ -146,6 +146,7 @@ void potatoInit()
   const uint8_t* cert;
   int certLen;
 
+  mbedtls_threading_set_picoos();
   mbedtls_ssl_config_init(&sslConf);
 
   mbedtls_x509_crt_init(&caCert);
