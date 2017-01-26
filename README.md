@@ -13,7 +13,7 @@ In _esh_ prompt setup the system:
 
 ```
 esh> sta ap-name ap-password
-esh> mqtt --server=mqtt://mqtt-server-fqdn --topic sensordata --location kitchen
+esh> mqtt --server=mqtt://mqtt-server-fqdn --topic=sensordata --location=kitchen
 esh> wr
 esh> exit
 ```
@@ -21,7 +21,7 @@ esh> exit
 Or, to publish data to Amazon IOT MQTT:
 
 ```
-esh> mqtt --server=mqtts://nnnnnnnnnnnn.iot.eu-west-1.amazonaws.com --topic sensordata --location kitchen
+esh> mqtt --server=mqtts://nnnnnn.iot.eu-west-1.amazonaws.com --topic=sensordata --location=kitchen
 ```
 
 Certificates provided by Amazon should be placed into cert directory (in DER format) to be picked
@@ -35,13 +35,14 @@ GPIO connections:
 |------------|-----------------------------------------|
 | DS1820     | PB10                                    |
 | SETUP      | PB2                                     |
+| BATTV      | PA5/ADC1_5                              |
 | SWDIO      |                                         |
 | SWCLK      |                                         |
 | RESET      |                                         |
 
 To build this following modules are needed:
 
-* Pico]OS 
+* pico]OS
 * picoos-micro
 * picoos-micro-spiffs
 * picoos-lwip
