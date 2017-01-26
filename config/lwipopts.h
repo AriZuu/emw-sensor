@@ -70,7 +70,7 @@
 #define LWIP_DEBUG                      0
 
 #define MEM_ALIGNMENT                   4
-#define LWIP_STATS	                    1
+#define LWIP_STATS	                    0
 #define LWIP_STATS_DISPLAY	            0
 
 #define LWIP_DHCP                       1
