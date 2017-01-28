@@ -162,7 +162,7 @@ static void sensorThread(void* arg)
       owSerialNum(0, serialNum, TRUE);
       sensor = getSensor(serialNum);
       if (sensor == NULL)
-        continue;
+        break;
 
       if (!ReadTemperature(0, serialNum, &value) || value >= 85.0)
         value = -273;
