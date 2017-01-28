@@ -408,6 +408,7 @@ bool potatoSend()
   }
 
   pbDisconnect(&client);
+  printf("Data sent.\n");
   return true;
 }
 

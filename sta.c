@@ -206,8 +206,6 @@ bool staUp()
     return false;
   }
 
-  printf("Join OK.\n");
-
   // Ensure that semaphore is not set yet
   while (posSemaWait(ready, 0) == 0);
 

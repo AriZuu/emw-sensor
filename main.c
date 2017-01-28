@@ -156,11 +156,8 @@ static void tcpipDrain()
 
 static void tcpipSuspend(void* arg)
 {
-  printf("Tcp/ip suspend.\n");
-
   posSemaGet(sendSema);
 
-  printf("Tcp/ip resume.\n");
   sys_restart_timeouts();
   sys_sem_signal((sys_sem_t*)arg);
 }

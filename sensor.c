@@ -142,6 +142,9 @@ static void sensorThread(void* arg)
     posSemaGet(timerSema);
 
     time(&now);
+    ctime_r(&now, buf);
+    printf("------ %s ------\n", buf);
+
     now = (now / MEAS_CYCLE_SECS) * MEAS_CYCLE_SECS;
     if ((now % SEND_CYCLE_SECS) == 0)
       sendNeeded = true;
@@ -216,8 +219,6 @@ static void sensorThread(void* arg)
       sendNeeded = true;
 
     sensorUnlock();
-
-    printf("Sensor count %d, history max %d, sendflag=%d\n", sensorCount, historyMax, (int)sendNeeded);
 
     if (sendNeeded) {
 
