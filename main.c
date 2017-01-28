@@ -165,6 +165,14 @@ static void tcpipSuspend(void* arg)
   sys_sem_signal((sys_sem_t*)arg);
 }
 
+bool timeOk()
+{
+  time_t t;
+
+  time(&t);
+  return (t > T_2017_01_01);
+}
+
 static void mainTask(void* arg)
 {
   sys_sem_t sem;
@@ -235,10 +243,17 @@ static void mainTask(void* arg)
     setup();
   }
 
+  // Join AP so we can get time from SNTP.
+  if (staUp()) {
+
+    waitSystemTime();
+    staDown();
+  }
+  else
+    wwd_management_wifi_off();
+
   potatoInit();
   sensorInit();
-
-  wwd_management_wifi_off();
 
   flashPowerdown();  // don't need spiffs after this, save 15 uA
   printf("Startup complete.\n");
@@ -273,8 +288,21 @@ static void mainTask(void* arg)
 
     if (staUp()) {
 
-      potatoSend();
-      waitSystemTime();
+      if (!timeOk()) {
+
+        // SSL/TLS needs time before it can work.
+        // So wait for SNTP.
+        waitSystemTime();
+        potatoSend();
+      }
+      else {
+
+        // Time is already ok, so we can send data
+        // and wait for clock update in parallel tasks.
+        potatoSend();
+        waitSystemTime();
+      }
+
       userLed(true);
       tcpipDrain();
       staDown();
@@ -392,6 +420,6 @@ int main(int argc, char **argv)
   PWR->CR  &= ~PWR_CR_PDDS;
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
-  nosInit(mainTask, NULL, 1, 8000, 512);
+  nosInit(mainTask, NULL, 1, 5120, 512);
   return 0;
 }

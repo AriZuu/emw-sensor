@@ -45,6 +45,9 @@ typedef struct {
   double  temperature[MAX_HISTORY];
 } Sensor;
 
+#define T_2017_01_01 1483228800
+
+bool timeOk(void);
 void initConfig(void);
 void potatoInit(void);
 bool potatoSend(void);
