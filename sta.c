@@ -200,6 +200,7 @@ bool staUp()
 
   if (wwd_wifi_join(&ssid, WICED_SECURITY_WPA2_MIXED_PSK, (uint8_t*)pass, strlen(pass), NULL, WWD_STA_INTERFACE) != WWD_SUCCESS) {
 
+    wwd_management_wifi_off();
     wifiLed(false);
     printf("Cannot join AP.\n");
     return false;
