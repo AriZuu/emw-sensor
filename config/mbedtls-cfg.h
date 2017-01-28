@@ -301,7 +301,7 @@
  * Requires MBEDTLS_ENTROPY_C, MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
  *
  */
-//#define MBEDTLS_TEST_NULL_ENTROPY
+#define MBEDTLS_TEST_NULL_ENTROPY
 
 /**
  * \def MBEDTLS_ENTROPY_HARDWARE_ALT
@@ -795,7 +795,7 @@
  *
  * Uncomment this macro to prevent loading of default entropy functions.
  */
-//#define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
+#define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
 
 /**
  * \def MBEDTLS_NO_PLATFORM_ENTROPY
@@ -1275,7 +1275,7 @@
  *
  * Uncomment this to allow your own alternate threading implementation.
  */
-#define MBEDTLS_THREADING_ALT
+//#define MBEDTLS_THREADING_ALT
 
 /**
  * \def MBEDTLS_THREADING_PTHREAD
@@ -1699,7 +1699,7 @@
  *
  * This module provides debugging functions.
  */
-#define MBEDTLS_DEBUG_C
+//#define MBEDTLS_DEBUG_C
 
 /**
  * \def MBEDTLS_DES_C
@@ -1866,7 +1866,7 @@
  *
  * Uncomment to enable the HAVEGE random generator.
  */
-#define MBEDTLS_HAVEGE_C
+//#define MBEDTLS_HAVEGE_C
 
 /**
  * \def MBEDTLS_HMAC_DRBG_C
@@ -2323,7 +2323,7 @@
  *
  * Enable this layer to allow use of mutexes within mbed TLS
  */
-#define MBEDTLS_THREADING_C
+//#define MBEDTLS_THREADING_C
 
 /**
  * \def MBEDTLS_TIMING_C
@@ -2551,7 +2551,7 @@
 //#define MBEDTLS_SSL_CACHE_DEFAULT_MAX_ENTRIES      50 /**< Maximum entries in cache */
 
 /* SSL options */
-//#define MBEDTLS_SSL_MAX_CONTENT_LEN             16384 /**< Maxium fragment length in bytes, determines the size of each of the two internal I/O buffers */
+#define MBEDTLS_SSL_MAX_CONTENT_LEN             4096 /**< Maxium fragment length in bytes, determines the size of each of the two internal I/O buffers */
 //#define MBEDTLS_SSL_DEFAULT_TICKET_LIFETIME     86400 /**< Lifetime of session tickets (if enabled) */
 //#define MBEDTLS_PSK_MAX_LEN               32 /**< Max size of TLS pre-shared keys, in bytes (default 256 bits) */
 //#define MBEDTLS_SSL_COOKIE_TIMEOUT        60 /**< Default expiration delay of DTLS cookies, in seconds if HAVE_TIME, or in number of cookies issued */
@@ -2596,6 +2596,6 @@
 #include MBEDTLS_USER_CONFIG_FILE
 #endif
 
-//#include "check_config.h"
+#include "mbedtls/check_config.h"
 
 #endif /* MBEDTLS_CONFIG_H */
