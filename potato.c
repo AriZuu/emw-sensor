@@ -98,6 +98,15 @@ static PbConnect connectArgs;
 
 #if POTATO_TLS
 
+#ifdef MBEDTLS_DEBUG_C
+static void sslDebug(void *ctx, int level,
+                       const char *file, int line, const char *str)
+{
+    fprintf((FILE *)ctx, "%s:%04d: %s", file, line, str);
+    fflush((FILE *)ctx);
+}
+#endif
+
 static int getCertData(const char* fn, const unsigned char** buf)
 {
   UosFile* f;
@@ -127,27 +136,40 @@ static mbedtls_x509_crt    caCert;
 static mbedtls_x509_crt    cliCert;
 static mbedtls_pk_context  privKey;
 
-
 #endif
-
 
 void potatoInit()
 {
-    sprintf(clientId, "EMW%02x%02x%02x%02x%02x%02x", myMac.octet[0],
-                      myMac.octet[1], myMac.octet[2], myMac.octet[3],
-                      myMac.octet[4], myMac.octet[5]);
+  sprintf(clientId, "EMW%02x%02x%02x%02x%02x%02x", myMac.octet[0],
+                    myMac.octet[1], myMac.octet[2], myMac.octet[3],
+                    myMac.octet[4], myMac.octet[5]);
 
-    connectArgs.clientId = clientId;
-    connectArgs.keepAlive= 60;
+  connectArgs.clientId = clientId;
+  connectArgs.keepAlive= 60;
+}
 
 #if POTATO_TLS
 
+static bool tlsInitialized = false;
+
+static void tlsInit()
+{
   int st;
   const uint8_t* cert;
   int certLen;
 
+  if (tlsInitialized)
+    return;
+
+#ifdef MBEDTLS_THREADING_C
   mbedtls_threading_set_picoos();
+#endif
   mbedtls_ssl_config_init(&sslConf);
+
+#ifdef MBEDTLS_DEBUG_C
+  mbedtls_ssl_conf_dbg(&sslConf, sslDebug, stdout);
+  mbedtls_debug_set_threshold(1);
+#endif
 
   mbedtls_x509_crt_init(&caCert);
   mbedtls_x509_crt_init(&cliCert);
@@ -214,9 +236,10 @@ void potatoInit()
 
   mbedtls_ssl_conf_rng(&sslConf, mbedtls_ctr_drbg_random, &ctrDrbg);
   printf("SSL config done.\n");
-#endif
-
+  tlsInitialized = true;
 }
+
+#endif
 
 static char jsonBuf[1024];
 static JsonContext jsonCtx;
@@ -323,6 +346,7 @@ bool potatoSend()
   const char* topic  = uosConfigGet("mqtt.topic");
   const char* location = (char*)uosConfigGet("mqtt.location");
   char addr[80];
+  int   status;
   
   if (location == NULL)
     location = "somewhere";
@@ -335,13 +359,33 @@ bool potatoSend()
 
 #if POTATO_TLS
 
+  if (!timeOk()) {
+
+    printf("System clock not set - cannot use SSL/TLS.\n");
+    return false;
+  }
+
+  tlsInit();
   connectArgs.sslConf = &sslConf;
 
 #endif
 
-  if (pbConnectURL(&client, server, &connectArgs) < 0) {
+  status = pbConnectURL(&client, server, &connectArgs);
+  if (status < 0) {
 
-    printf("potato: connect failed.\n");
+    printf("potato: connect failed, error %d\n", status);
+#if POTATO_TLS
+    if (status == PB_MBEDTLS) {
+
+      printf("        SSL error 0x%X\n", client.sslResult);
+#ifdef MBEDTLS_ERROR_C
+      mbedtls_strerror(client.sslResult, jsonBuf, sizeof(jsonBuf));
+      printf("        %s\n", jsonBuf);
+#endif
+
+    }
+#endif
+
     return false;
   }
 
