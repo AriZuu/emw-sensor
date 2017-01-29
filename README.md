@@ -46,6 +46,7 @@ To build this following modules are needed:
 * picoos-micro
 * picoos-micro-spiffs
 * picoos-lwip
+* picoos-mbedtls
 * picoos-ow
 * wiced-driver
 * cmsis-ports
