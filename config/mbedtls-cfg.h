@@ -462,7 +462,7 @@
  *
  * Comment this macro to disable NIST curves optimisation.
  */
-//#define MBEDTLS_ECP_NIST_OPTIM
+#define MBEDTLS_ECP_NIST_OPTIM
 
 /**
  * \def MBEDTLS_ECDSA_DETERMINISTIC
@@ -1234,7 +1234,7 @@
  *
  * Comment this macro to disable support for SSL session tickets
  */
-//#define MBEDTLS_SSL_SESSION_TICKETS
+#define MBEDTLS_SSL_SESSION_TICKETS
 
 /**
  * \def MBEDTLS_SSL_EXPORT_KEYS
@@ -1358,7 +1358,7 @@
  *
  * Comment this macro to disallow using RSASSA-PSS in certificates.
  */
-//#define MBEDTLS_X509_RSASSA_PSS_SUPPORT
+#define MBEDTLS_X509_RSASSA_PSS_SUPPORT
 
 /**
  * \def MBEDTLS_ZLIB_SUPPORT
@@ -1402,7 +1402,7 @@
  *
  * This modules adds support for the AES-NI instructions on x86-64
  */
-//#define MBEDTLS_AESNI_C
+#define MBEDTLS_AESNI_C
 
 /**
  * \def MBEDTLS_AES_C
@@ -1528,7 +1528,7 @@
  *          library/x509write_crt.c
  *          library/x509write_csr.c
  */
-//#define MBEDTLS_ASN1_WRITE_C
+#define MBEDTLS_ASN1_WRITE_C
 
 /**
  * \def MBEDTLS_BASE64_C
@@ -1880,7 +1880,7 @@
  *
  * Uncomment to enable the HMAC_DRBG random number geerator.
  */
-//#define MBEDTLS_HMAC_DRBG_C
+#define MBEDTLS_HMAC_DRBG_C
 
 /**
  * \def MBEDTLS_MD_C
@@ -1931,7 +1931,7 @@
  * This module is required for SSL/TLS and X.509.
  * PEM_PARSE uses MD5 for decrypting encrypted keys.
  */
-//#define MBEDTLS_MD5_C
+#define MBEDTLS_MD5_C
 
 /**
  * \def MBEDTLS_MEMORY_BUFFER_ALLOC_C
@@ -2003,7 +2003,7 @@
  *
  * This modules adds support for the VIA PadLock on x86.
  */
-//#define MBEDTLS_PADLOCK_C
+#define MBEDTLS_PADLOCK_C
 
 /**
  * \def MBEDTLS_PEM_PARSE_C
@@ -2082,7 +2082,7 @@
  *
  * Uncomment to enable generic public key write functions.
  */
-//#define MBEDTLS_PK_WRITE_C
+#define MBEDTLS_PK_WRITE_C
 
 /**
  * \def MBEDTLS_PKCS5_C
@@ -2095,7 +2095,7 @@
  *
  * This module adds support for the PKCS#5 functions.
  */
-//#define MBEDTLS_PKCS5_C
+#define MBEDTLS_PKCS5_C
 
 /**
  * \def MBEDTLS_PKCS11_C
@@ -2126,7 +2126,7 @@
  *
  * This module enables PKCS#12 functions.
  */
-//#define MBEDTLS_PKCS12_C
+#define MBEDTLS_PKCS12_C
 
 /**
  * \def MBEDTLS_PLATFORM_C
@@ -2257,7 +2257,7 @@
  *
  * Requires: MBEDTLS_CIPHER_C
  */
-//#define MBEDTLS_SSL_TICKET_C
+#define MBEDTLS_SSL_TICKET_C
 
 /**
  * \def MBEDTLS_SSL_CLI_C
@@ -2467,7 +2467,7 @@
  * Module:  library/xtea.c
  * Caller:
  */
-//#define MBEDTLS_XTEA_C
+#define MBEDTLS_XTEA_C
 
 /* \} name SECTION: mbed TLS modules */
 
