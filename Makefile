@@ -34,6 +34,7 @@ CPU = stm32
 
 BUILD ?= RELEASE
 
+BUNDLE_FIRMWARE	     ?= 1
 WICED_PLATFORM       = EMW3165
 WICED_CHIP           = 43362
 WICED_CHIP_REVISION  = A2
@@ -66,7 +67,7 @@ SRC_HDR =  emw-sensor.h
 SRC_OBJ =
 SRC_LIB = -lm
 DIR_USRINC = 
-CDEFINES += 
+CDEFINES += BUNDLE_FIRMWARE=$(BUNDLE_FIRMWARE)
 
 # CMSIS setup
 STM32_DEFINES = HSE_VALUE=26000000
@@ -86,5 +87,5 @@ POSTLINK1 = arm-none-eabi-size $(TARGETOUT)
 include $(MAKE_OUT)
 
 romfiles.c:
-	sh gen_romfs.sh > romfiles.c
+	sh gen_romfs.sh $(BUNDLE_FIRMWARE) > romfiles.c
 

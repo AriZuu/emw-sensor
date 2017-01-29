@@ -252,7 +252,9 @@ static void mainTask(void* arg)
   potatoInit();
   sensorInit();
 
+#if BUNDLE_FIRMWARE
   flashPowerdown();  // don't need spiffs after this, save 15 uA
+#endif
   printf("Startup complete.\n");
 
   for (i = 0; i < 3; i++) {

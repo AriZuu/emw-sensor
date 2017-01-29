@@ -289,6 +289,65 @@ static int sta(EshContext* ctx)
   return 0;
 }
 
+#if BUNDLE_FIRMWARE
+
+/*
+ * Copy Wifi firmware to spiffs. This allows compilation of
+ * version without firmware blob in code flash, shrinking it's
+ * size about 200 kb.
+ */
+static int copyfw(EshContext* ctx)
+{
+  eshCheckNamedArgsUsed(ctx);
+  eshCheckArgsUsed(ctx);
+  if (eshArgError(ctx) != EshOK)
+    return -1;
+
+  int from;
+  int to;
+
+  from = open("/firmware/" WDCFG_FIRMWARE, O_RDONLY);
+  if (from == -1) {
+
+    eshPrintf(ctx, "Cannot open /firmware/" WDCFG_FIRMWARE ".\n");
+    return -1;
+  }
+
+  to = open("/flash/" WDCFG_FIRMWARE, O_WRONLY | O_CREAT | O_TRUNC);
+  if (to == -1) {
+
+    eshPrintf(ctx, "Cannot open /flash/" WDCFG_FIRMWARE ".\n");
+    close(from);
+    return -1;
+  }
+
+  int len;
+  char buf[128];
+
+  while ((len = read(from, buf, sizeof(buf))) > 0) {
+
+    if (write(to, buf, len) != len) {
+
+      eshPrintf(ctx, "Cannot write to /flash/" WDCFG_FIRMWARE ".\n");
+      break;
+    }
+  }
+
+  close(from);
+  close(to);
+
+  return 0;
+}
+
+const EshCommand copyfwCommand = {
+  .flags = 0,
+  .name = "copyfw",
+  .help = "Copy wifi firmware from /firmware to /flash",
+  .handler = copyfw
+};
+
+#endif
+
 const EshCommand staCommand = {
   .flags = 0,
   .name = "sta",
@@ -315,6 +374,9 @@ extern const EshCommand apCommand;
 extern const EshCommand resetCommand;
 
 const EshCommand *eshCommandList[] = {
+#if BUNDLE_FIRMWARE
+  &copyfwCommand,
+#endif
   &mqttCommand,
   &staCommand,
   &wrCommand,

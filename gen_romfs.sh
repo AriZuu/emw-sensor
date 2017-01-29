@@ -27,7 +27,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
-FILES="$WICED_SDK/resources/firmware/$WICED_CHIP/$WICED_CHIP$WICED_CHIP_REVISION.bin"
+if [ "$1" = "1" ]
+then
+	FILES="$WICED_SDK/resources/firmware/$WICED_CHIP/$WICED_CHIP$WICED_CHIP_REVISION.bin"
+else
+	FILES=""
+fi
 
 if [ -f cert/cert.der ]
 then
