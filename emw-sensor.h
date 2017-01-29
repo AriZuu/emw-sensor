@@ -62,6 +62,7 @@ void wifiLed(bool on);
 void userLed(bool on);
 void flashPowerdown(void);
 void flashPowerup(void);
+void logPrintf(const char* fmt, ...);
 
 void waitSystemTime(void);
 

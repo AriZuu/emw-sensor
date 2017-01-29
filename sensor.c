@@ -116,7 +116,7 @@ static void readBattery()
   result = ADC_GetConversionValue(ADC1);
 
   battery = result * 3.3 / 256;
-  printf ("Battery         = %f V\n", battery);
+  logPrintf ("Battery         = %f V\n", battery);
 }
 
 static void sensorThread(void* arg)
@@ -143,7 +143,6 @@ static void sensorThread(void* arg)
 
     time(&now);
     ctime_r(&now, buf);
-    printf("------ %s", buf);
 
     now = (now / MEAS_CYCLE_SECS) * MEAS_CYCLE_SECS;
     if ((now % SEND_CYCLE_SECS) == 0)
@@ -171,7 +170,7 @@ static void sensorThread(void* arg)
         value = -273;
 
       sensorAddressStr(buf, serialNum);
-      printf("%s = %f\n", buf, value);
+      logPrintf("%s = %f\n", buf, value);
 
       sensorLock();
       if (sensor->historyCount >= MAX_HISTORY) {

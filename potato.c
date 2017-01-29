@@ -235,7 +235,7 @@ static void tlsInit()
   }
 
   mbedtls_ssl_conf_rng(&sslConf, mbedtls_ctr_drbg_random, &ctrDrbg);
-  printf("SSL config done.\n");
+  logPrintf("SSL config done.\n");
   tlsInitialized = true;
 }
 
@@ -408,7 +408,7 @@ bool potatoSend()
   }
 
   pbDisconnect(&client);
-  printf("Data sent.\n");
+  logPrintf("Data sent.\n");
   return true;
 }
 

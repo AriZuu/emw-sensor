@@ -36,6 +36,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <eshell.h>
+#include <stdarg.h>
 
 #include "lwip/mem.h"
 #include "lwip/memp.h"
@@ -160,6 +161,21 @@ static void tcpipSuspend(void* arg)
 
   sys_restart_timeouts();
   sys_sem_signal((sys_sem_t*)arg);
+}
+
+void logPrintf(const char* fmt, ...)
+{
+  va_list ap;
+  time_t t;
+  struct tm* tm;
+
+  time(&t);
+  tm = gmtime(&t);
+
+  printf("%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
+  va_start(ap, fmt);
+  vprintf(fmt, ap);
+  va_end(ap);
 }
 
 bool timeOk()
@@ -314,7 +330,7 @@ static void mainTask(void* arg)
     if (delta > 0)
       busyTicks += delta;
 
-    printf("Cycle time %d Busy %f idle %f ratio %5.2f %%\n", delta, busyTicks, sleepTicks, busyTicks / (sleepTicks + busyTicks) * 100);
+    logPrintf("Cycle time %d Busy %f idle %f ratio %5.2f %%\n", delta, busyTicks, sleepTicks, busyTicks / (sleepTicks + busyTicks) * 100);
     uosResourceDiag();
   }
 }
