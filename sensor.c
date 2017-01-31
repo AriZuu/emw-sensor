@@ -93,6 +93,9 @@ void sensorCycleReset(const struct timeval* now)
   time_t next;
   int    delay;
 
+  if (timer == NULL) // Task not initialized yet.
+    return;
+
   next = (now->tv_sec / MEAS_CYCLE_SECS) * MEAS_CYCLE_SECS + MEAS_CYCLE_SECS;
   delay = next - now->tv_sec;
   
@@ -128,12 +131,13 @@ static void sensorThread(void* arg)
   Sensor* sensor;
   bool sendNeeded = true;
   time_t  now;
+  struct timeval tv;
 
   timerSema = posSemaCreate(0);
   timer     = posTimerCreate();
 
-  posTimerSet(timer, timerSema, MS(10000), MS(MEAS_CYCLE_SECS * 1000));
-  posTimerStart(timer);
+  gettimeofday(&tv, NULL);
+  sensorCycleReset(&tv);
 
   while (true) {
 
