@@ -34,6 +34,9 @@ else
 	FILES=""
 fi
 
+dd if=/dev/random of=cert/seedfile bs=64 count=1
+FILES="$FILES cert/seedfile"
+
 if [ -f cert/cert.der ]
 then
    FILES="$FILES cert/cert.der"
@@ -66,7 +69,7 @@ do
    FILENO=`expr $FILENO + 1`
    echo "// $F"
    case $F in
-   *.der|*.jpg|*.png|*.gif|*.bin)
+   */seedfile|*.der|*.jpg|*.png|*.gif|*.bin)
       CAT=cat ;;
    *)
       CAT="gzip -c" ;;
@@ -88,7 +91,7 @@ for F in $FILES
 do
    FILENO=`expr $FILENO + 1`
    case $F in
-   *.der|*.jpg|*.png|*.gif|*.bin)
+   */seedfile|*.der|*.jpg|*.png|*.gif|*.bin)
       GZIP="" ;;
    *)
       GZIP=".gz" ;;

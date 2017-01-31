@@ -268,9 +268,6 @@ static void mainTask(void* arg)
   potatoInit();
   sensorInit();
 
-#if BUNDLE_FIRMWARE
-  flashPowerdown();  // don't need spiffs after this, save 15 uA
-#endif
   printf("Startup complete.\n");
 
   for (i = 0; i < 3; i++) {
@@ -289,9 +286,15 @@ static void mainTask(void* arg)
   sendSema = posSemaCreate(0);
   while (1) {
 
+#if BUNDLE_FIRMWARE
+    flashPowerdown();  // don't need spiffs after this, save 15 uA
+#endif
     start = jiffies;
     tcpip_callback_with_block(tcpipSuspend, &sem, true);
     sys_sem_wait(&sem);
+#if BUNDLE_FIRMWARE
+    flashPowerup();  // don't need spiffs after this, save 15 uA
+#endif
 
     delta = jiffies - start;
     if (delta > 0)

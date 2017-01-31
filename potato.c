@@ -42,6 +42,7 @@
 #include "potato-bus.h"
 #include "potato-json.h"
 #include "emw-sensor.h"
+#include "picoos-mbedtls.h"
 
 extern wiced_mac_t   myMac;
 
@@ -160,6 +161,8 @@ static void tlsInit()
 
   if (tlsInitialized)
     return;
+
+  mbedtls_platform_set_nv_seed_picoos();
 
 #ifdef MBEDTLS_THREADING_C
   mbedtls_threading_set_picoos();
