@@ -171,6 +171,7 @@ static void sntpStartStop(void* arg)
 bool staUp()
 {
   wiced_ssid_t ssid;
+  wwd_result_t result;
 
 
   /*
@@ -187,10 +188,11 @@ bool staUp()
   }
 
   wifiLed(true);
-  if (wwd_management_wifi_on(WICED_COUNTRY_FINLAND) != WWD_SUCCESS) {
+  result = wwd_management_wifi_on(WICED_COUNTRY_FINLAND);
+  if (result != WWD_SUCCESS) {
 
     wifiLed(false);
-    printf("Cannot turn wifi on.\n");
+    printf("Cannot turn wifi on, error %d.\n", result);
     return false;
   }
 
@@ -198,11 +200,12 @@ bool staUp()
   strcpy((char*)ssid.value, ap);
   ssid.length = strlen(ap);
 
-  if (wwd_wifi_join(&ssid, WICED_SECURITY_WPA2_MIXED_PSK, (uint8_t*)pass, strlen(pass), NULL, WWD_STA_INTERFACE) != WWD_SUCCESS) {
+  result = wwd_wifi_join(&ssid, WICED_SECURITY_WPA2_MIXED_PSK, (uint8_t*)pass, strlen(pass), NULL, WWD_STA_INTERFACE);
+  if (result != WWD_SUCCESS) {
 
     wwd_management_wifi_off();
     wifiLed(false);
-    printf("Cannot join AP.\n");
+    printf("Cannot join AP, error %d.\n", result);
     return false;
   }
 
