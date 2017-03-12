@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <inttypes.h>
 #include <math.h>
 #include <eshell.h>
 
@@ -253,6 +254,11 @@ static bool buildJson(const char* location)
   char      timeStamp[40];
   char name[40];
   struct tm* t;
+  int32_t rssi;
+  int32_t noise;
+
+  wwd_wifi_get_rssi(&rssi);
+  wwd_wifi_get_noise(&noise);
 
   root = jsonGenerate(&jsonCtx, jsonBuf, sizeof(jsonBuf));
 
@@ -317,6 +323,12 @@ static bool buildJson(const char* location)
       Sensor* sensor;
 
       s = jsonStartObject(locations);
+
+      jsonWriteKey(s, "rssi");
+      jsonWriteInteger(s, rssi);
+      jsonWriteKey(s, "noise");
+      jsonWriteInteger(s, noise);
+
       sensor = sensorList;
 
       jsonWriteKey(s, "battery");
