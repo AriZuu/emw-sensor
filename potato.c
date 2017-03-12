@@ -374,14 +374,17 @@ bool potatoSend()
 
 #if POTATO_TLS
 
-  if (!timeOk()) {
+  if (pbIsSSL_URL(server)) {
 
-    printf("System clock not set - cannot use SSL/TLS.\n");
-    return false;
+    if (!timeOk()) {
+
+      printf("System clock not set - cannot use SSL/TLS.\n");
+      return false;
+    }
+
+    tlsInit();
+    connectArgs.sslConf = &sslConf;
   }
-
-  tlsInit();
-  connectArgs.sslConf = &sslConf;
 
 #endif
 
