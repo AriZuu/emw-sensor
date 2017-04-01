@@ -85,12 +85,18 @@ const EshCommand resetCommand = {
 
 
 POSSEMA_t sendSema;
+static int uptime = 0;
 
 void tcpServerThread(void*);
 
 wiced_mac_t   myMac             = { {  0, 0, 0, 0, 0, 0 } };
 
 extern struct netif defaultIf;
+
+int getUptime()
+{
+  return uptime;
+}
 
 /*
  * This is called by lwip when basic initialization has been completed.
@@ -282,6 +288,7 @@ static void mainTask(void* arg)
   float busyTicks = 0;
   UVAR_t start;
   VAR_t delta;
+  int retries = 0;
 
   sendSema = posSemaCreate(0);
   while (1) {
@@ -301,6 +308,8 @@ static void mainTask(void* arg)
       sleepTicks += delta;
 
     start = jiffies;
+    ++uptime;
+    ++retries;
 
     sensorLock();
 
@@ -325,9 +334,17 @@ static void mainTask(void* arg)
       tcpipDrain();
       staDown();
       userLed(false);
+      retries = 0;
     }
 
     sensorUnlock();
+
+    if (retries > 10) {
+
+      printf("Too many send failures. Resetting system.\n");
+      posTaskSleep(MS(2000));
+      NVIC_SystemReset();
+    }
 
     delta = jiffies - start;
     if (delta > 0)

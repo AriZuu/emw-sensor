@@ -328,6 +328,8 @@ static bool buildJson(const char* location)
       jsonWriteInteger(s, rssi);
       jsonWriteKey(s, "noise");
       jsonWriteInteger(s, noise);
+      jsonWriteKey(s, "uptime");
+      jsonWriteInteger(s, getUptime());
 
       sensor = sensorList;
 

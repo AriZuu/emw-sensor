@@ -63,6 +63,7 @@ void userLed(bool on);
 void flashPowerdown(void);
 void flashPowerup(void);
 void logPrintf(const char* fmt, ...);
+int  getUptime(void);
 
 void waitSystemTime(void);
 
