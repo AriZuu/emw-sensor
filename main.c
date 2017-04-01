@@ -72,8 +72,7 @@ static int systemReset(EshContext* ctx)
   if (eshArgError(ctx) != EshOK)
     return -1;
 
-  SCB->AIRCR = (0x5FA << SCB_AIRCR_VECTKEY_Pos)  // unlock key
-             | (1 << SCB_AIRCR_SYSRESETREQ_Pos); // reset request
+  NVIC_SystemReset();
   return 0;
 }
 
