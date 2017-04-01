@@ -49,6 +49,7 @@
 #include <lwip/dhcp.h>
 #include "lwip/tcpip.h"
 #include "lwip/ip_addr.h"
+#include "lwip/init.h"
 
 #include "lwip/priv/tcp_priv.h"
 
@@ -192,7 +193,7 @@ static void mainTask(void* arg)
 
   uosInit();
   uosBootDiag();
-  printf("WICED SDK %s\n", WICED_SDK_VERSION);
+  printf("lwIP %s WICED SDK %s\n", LWIP_VERSION_STRING, WICED_SDK_VERSION);
   devTreeInit();
 
   flashPowerup(); // ensure that flash chip is not in deep powerdown
