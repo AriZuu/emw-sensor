@@ -56,6 +56,7 @@ bool buttonRead(void);
 bool staUp(void);
 void staInit(void);
 void staDown(void);
+bool staIsAlwaysOnline(void);
 void setup(void);
 void ledInit(void);
 void wifiLed(bool on);

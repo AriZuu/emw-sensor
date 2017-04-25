@@ -132,6 +132,7 @@ static void sensorThread(void* arg)
   bool sendNeeded = true;
   time_t  now;
   struct timeval tv;
+  bool    online = staIsAlwaysOnline();
 
   timerSema = posSemaCreate(0);
   timer     = posTimerCreate();
@@ -223,7 +224,7 @@ static void sensorThread(void* arg)
 
     sensorUnlock();
 
-    if (sendNeeded) {
+    if (online || sendNeeded) {
 
       int randomSleep;
 

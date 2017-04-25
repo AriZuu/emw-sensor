@@ -262,17 +262,24 @@ static void mainTask(void* arg)
     setup();
   }
 
+  bool online = staIsAlwaysOnline();
+
   // Join AP so we can get time from SNTP.
   if (staUp()) {
 
     waitSystemTime();
-    staDown();
+    if (!online)
+      staDown();
   }
   else
-    wwd_management_wifi_off();
+    if (!online)
+      wwd_management_wifi_off();
 
   potatoInit();
   sensorInit();
+
+  if (online)
+    eshStartTelnetd();
 
   printf("Startup complete.\n");
 
@@ -284,8 +291,6 @@ static void mainTask(void* arg)
     posTaskSleep(MS(100));
   }
 
-  float sleepTicks = 0;
-  float busyTicks = 0;
   UVAR_t start;
   VAR_t delta;
   int retries = 0;
@@ -293,51 +298,71 @@ static void mainTask(void* arg)
   sendSema = posSemaCreate(0);
   while (1) {
 
-#if BUNDLE_FIRMWARE
-    flashPowerdown();  // don't need spiffs after this, save 15 uA
-#endif
-    start = jiffies;
-    tcpip_callback_with_block(tcpipSuspend, &sem, true);
-    sys_sem_wait(&sem);
-#if BUNDLE_FIRMWARE
-    flashPowerup();  // don't need spiffs after this, save 15 uA
-#endif
+    if (online) {
 
-    delta = jiffies - start;
-    if (delta > 0)
-      sleepTicks += delta;
+      posSemaGet(sendSema);
+    }
+    else {
+
+#if BUNDLE_FIRMWARE
+      flashPowerdown();  // don't need spiffs after this, save 15 uA
+#endif
+      tcpip_callback_with_block(tcpipSuspend, &sem, true);
+      sys_sem_wait(&sem);
+#if BUNDLE_FIRMWARE
+      flashPowerup();  // don't need spiffs after this, save 15 uA
+#endif
+    }
 
     start = jiffies;
     ++uptime;
     ++retries;
 
+    if (online) {
+
+      if (wwd_wifi_is_ready_to_transceive(WWD_STA_INTERFACE) != WWD_SUCCESS) {
+   
+        logPrintf("Wifi has failed, reconnecting.\n");
+        staDown();
+        if (!staUp())
+          continue;
+      }
+    }
+    else {
+
+      if (!staUp())
+        continue;
+    }
+
     sensorLock();
 
-    if (staUp()) {
+    if (!timeOk()) {
 
-      if (!timeOk()) {
+      // SSL/TLS needs time before it can work.
+      // So wait for SNTP.
+      waitSystemTime();
+      potatoSend();
+    }
+    else {
 
-        // SSL/TLS needs time before it can work.
-        // So wait for SNTP.
-        waitSystemTime();
-        potatoSend();
-      }
-      else {
-
-        // Time is already ok, so we can send data
-        // and wait for clock update in parallel tasks.
-        potatoSend();
-        waitSystemTime();
-      }
-
-      userLed(true);
-      tcpipDrain();
-      staDown();
-      userLed(false);
-      retries = 0;
+      // Time is already ok, so we can send data
+      // and wait for clock update in parallel tasks.
+      potatoSend();
+      waitSystemTime();
     }
 
     sensorUnlock();
+
+    userLed(true);
+
+    if (!online) {
+
+      tcpipDrain();
+      staDown();
+    }
+
+    userLed(false);
+    retries = 0;
 
     if (retries > 10) {
 
@@ -347,10 +372,8 @@ static void mainTask(void* arg)
     }
 
     delta = jiffies - start;
-    if (delta > 0)
-      busyTicks += delta;
 
-    logPrintf("Cycle time %d Busy %f idle %f ratio %5.2f %%\n", delta, busyTicks, sleepTicks, busyTicks / (sleepTicks + busyTicks) * 100);
+    logPrintf("Cycle time %d.\n", delta);
     uosResourceDiag();
   }
 }

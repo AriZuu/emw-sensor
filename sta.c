@@ -257,7 +257,8 @@ void staDown()
  */
 static int sta(EshContext* ctx)
 {
-  char* reset = eshNamedArg(ctx, "reset", false);
+  char* reset  = eshNamedArg(ctx, "reset", false);
+  char* online = eshNamedArg(ctx, "online", false);
   char* ap;
   char* pass;
 
@@ -277,9 +278,11 @@ static int sta(EshContext* ctx)
 
     uosConfigSet("ap", "");
     uosConfigSet("pass", "");
+    uosConfigSet("online", "");
     return 0;
   }
 
+  uosConfigSet("online", online != NULL ? "yes" : "");
   if (ap == NULL || pass == NULL) {
 
     eshPrintf(ctx, "Usage: sta --reset | ap pass\n");
@@ -290,6 +293,15 @@ static int sta(EshContext* ctx)
   uosConfigSet("pass", pass);
 
   return 0;
+}
+
+bool staIsAlwaysOnline(void)
+{
+  const char* online = uosConfigGet("online");
+  if (online == NULL || strlen(online) == 0)
+    return false;
+
+  return true;
 }
 
 #if BUNDLE_FIRMWARE
