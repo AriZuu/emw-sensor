@@ -62,6 +62,7 @@
 #include "emw-sensor.h"
 
 static POSSEMA_t ready;
+static bool gotTime = false;
 
 void initConfig()
 {
@@ -150,12 +151,17 @@ void setSystemTime(time_t t)
     sensorCycleReset(&tv);
   }
 
-  posSemaSignal(sntpSema);
+  if (!gotTime)
+    posSemaSignal(sntpSema);
 }
 
 void waitSystemTime()
 {
+  if (gotTime)
+    return;
+
   posSemaWait(sntpSema, MS(2000));
+  gotTime = true;
 }
 
 static void sntpStartStop(void* arg)
@@ -173,6 +179,7 @@ bool staUp()
   wiced_ssid_t ssid;
   wwd_result_t result;
 
+  gotTime = false;
 
   /*
    * Get AP network name and password and attempt to join.
