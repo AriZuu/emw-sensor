@@ -98,7 +98,7 @@
  * dynamically allocate memory for additional events if the volume of events
  * defined by ::POSCFG_MAX_EVENTS is exhausted.
  */
-#define POSCFG_MAX_EVENTS       32
+#define POSCFG_MAX_EVENTS       48
 
 /** Maximum count of message buffers.
  * This definition sets the maximum count of message buffers that can be
