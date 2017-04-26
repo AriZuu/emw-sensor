@@ -62,7 +62,6 @@
 #include "emw-sensor.h"
 
 static POSSEMA_t ready;
-static bool gotTime = false;
 
 void initConfig()
 {
@@ -115,13 +114,13 @@ void ifStatusCallback(struct netif *netif)
 }
 
 struct netif defaultIf;
-static POSSEMA_t sntpSema;
+static POSFLAG_t sntpFlag;
 static time_t lastNtp = 0;
 
 void staInit()
 {
   ready = posSemaCreate(0);
-  sntpSema = posSemaCreate(0);
+  sntpFlag = posFlagCreate();
 }
 
 void setSystemTime(time_t t)
@@ -151,17 +150,12 @@ void setSystemTime(time_t t)
     sensorCycleReset(&tv);
   }
 
-  if (!gotTime)
-    posSemaSignal(sntpSema);
+  posFlagSet(sntpFlag, 0);
 }
 
 void waitSystemTime()
 {
-  if (gotTime)
-    return;
-
-  posSemaWait(sntpSema, MS(2000));
-  gotTime = true;
+  posFlagWait(sntpFlag, MS(2000));
 }
 
 static void sntpStartStop(void* arg)
@@ -178,8 +172,6 @@ bool staUp()
 {
   wiced_ssid_t ssid;
   wwd_result_t result;
-
-  gotTime = false;
 
   /*
    * Get AP network name and password and attempt to join.
@@ -237,14 +229,14 @@ bool staUp()
     return false;
   }
 
-  // Ensure that semaphore is not set yet
-  while (posSemaWait(sntpSema, 0) == 0);
+  // Ensure that flag is not set yet
+  posFlagWait(sntpFlag, 0);
   if (!ip_addr_isany(sntp_getserver(0))) {
 
     tcpip_callback_with_block(sntpStartStop, (void*)true, true);
   }
   else
-    posSemaSignal(sntpSema);
+    posFlagSet(sntpFlag, 0);
 
   return true;
 }
@@ -405,6 +397,7 @@ const EshCommand *eshCommandList[] = {
   &clearCommand,
 #if defined(POS_DEBUGHELP) && POSCFG_ARGCHECK > 1
   &eshTsCommand,
+  &eshEsCommand,
 #endif
   &eshOnewireCommand,
   &eshPingCommand,

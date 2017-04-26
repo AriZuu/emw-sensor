@@ -336,19 +336,26 @@ static void mainTask(void* arg)
 
     sensorLock();
 
-    if (!timeOk()) {
+    if (online) {
 
-      // SSL/TLS needs time before it can work.
-      // So wait for SNTP.
-      waitSystemTime();
       potatoSend();
     }
     else {
 
-      // Time is already ok, so we can send data
-      // and wait for clock update in parallel tasks.
-      potatoSend();
-      waitSystemTime();
+      if (!timeOk()) {
+
+        // SSL/TLS needs time before it can work.
+        // So wait for SNTP.
+        waitSystemTime();
+        potatoSend();
+      }
+      else {
+
+        // Time is already ok, so we can send data
+        // and wait for clock update in parallel tasks.
+        potatoSend();
+        waitSystemTime();
+      }
     }
 
     sensorUnlock();
