@@ -34,7 +34,7 @@ CPU = stm32
 
 BUILD ?= RELEASE
 
-ifeq '$(strip $(COMPILER))' 'RELEASE'
+ifeq '$(strip $(BUILD))' 'RELEASE'
 BUNDLE_FIRMWARE	     ?= 1
 else
 BUNDLE_FIRMWARE	     ?= 0
