@@ -34,7 +34,13 @@ CPU = stm32
 
 BUILD ?= RELEASE
 
+ifeq '$(strip $(COMPILER))' 'RELEASE'
 BUNDLE_FIRMWARE	     ?= 1
+else
+BUNDLE_FIRMWARE	     ?= 0
+endif
+
+ROMFILES             = romfiles_$(BUNDLE_FIRMWARE).c
 WICED_PLATFORM       = EMW3165
 WICED_CHIP           = 43362
 WICED_CHIP_REVISION  = A2
@@ -53,7 +59,7 @@ NANO = 1
 TARGET = emw-sensor
 SRC_TXT =	 main.c \
                  startup.c \
-                 romfiles.c \
+                 $(ROMFILES) \
                  sta.c \
                  led.c \
                  setup.c \
@@ -86,6 +92,6 @@ POSTLINK1 = arm-none-eabi-size $(TARGETOUT)
 
 include $(MAKE_OUT)
 
-romfiles.c:
-	sh gen_romfs.sh $(BUNDLE_FIRMWARE) > romfiles.c
+$(ROMFILES):
+	sh gen_romfs.sh $(BUNDLE_FIRMWARE) > $(ROMFILES)
 
