@@ -109,7 +109,7 @@ void ifStatusCallback(struct netif *netif)
   if (netif_is_up(netif)) {
 
     if (!ip4_addr_isany_val(*netif_ip4_addr(netif)))
-      posSemaSignal(ready);
+      nosSemaSignal(ready);
   }
 }
 
@@ -119,8 +119,8 @@ static time_t lastNtp = 0;
 
 void staInit()
 {
-  ready = posSemaCreate(0);
-  sntpFlag = posFlagCreate();
+  ready = nosSemaCreate(0, 0, "tcpok");
+  sntpFlag = nosFlagCreate("sntp");
 }
 
 void setSystemTime(time_t t)
@@ -150,12 +150,12 @@ void setSystemTime(time_t t)
     sensorCycleReset(&tv);
   }
 
-  posFlagSet(sntpFlag, 0);
+  nosFlagSet(sntpFlag, 0);
 }
 
 void waitSystemTime()
 {
-  posFlagWait(sntpFlag, MS(2000));
+  nosFlagWait(sntpFlag, MS(2000));
 }
 
 static void sntpStartStop(void* arg)
@@ -209,7 +209,7 @@ bool staUp()
   }
 
   // Ensure that semaphore is not set yet
-  while (posSemaWait(ready, 0) == 0);
+  while (nosSemaWait(ready, 0) == 0);
 
   netifapi_netif_set_up(&defaultIf);
   netif_set_status_callback(&defaultIf, ifStatusCallback);
@@ -222,7 +222,7 @@ bool staUp()
   defaultIf.ip6_autoconfig_enabled = 1;
 #endif
 
-  if (posSemaWait(ready, MS(10000)) != 0) {
+  if (nosSemaWait(ready, MS(10000)) != 0) {
 
     printf("No DHCP lease.\n");
     staDown();
@@ -230,13 +230,13 @@ bool staUp()
   }
 
   // Ensure that flag is not set yet
-  posFlagWait(sntpFlag, 0);
+  nosFlagWait(sntpFlag, 0);
   if (!ip_addr_isany(sntp_getserver(0))) {
 
     tcpip_callback_with_block(sntpStartStop, (void*)true, true);
   }
   else
-    posFlagSet(sntpFlag, 0);
+    nosFlagSet(sntpFlag, 0);
 
   return true;
 }

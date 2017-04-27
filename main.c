@@ -163,7 +163,7 @@ static void tcpipDrain()
 
 static void tcpipSuspend(void* arg)
 {
-  posSemaGet(sendSema);
+  nosSemaGet(sendSema);
 
   sys_restart_timeouts();
   sys_sem_signal((sys_sem_t*)arg);
@@ -295,12 +295,12 @@ static void mainTask(void* arg)
   VAR_t delta;
   int retries = 0;
 
-  sendSema = posSemaCreate(0);
+  sendSema = nosSemaCreate(0, 0, "send*");
   while (1) {
 
     if (online) {
 
-      posSemaGet(sendSema);
+      nosSemaGet(sendSema);
     }
     else {
 

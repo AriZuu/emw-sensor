@@ -134,7 +134,7 @@ static void sensorThread(void* arg)
   struct timeval tv;
   bool    online = staIsAlwaysOnline();
 
-  timerSema = posSemaCreate(0);
+  timerSema = nosSemaCreate(0, 0, "sensor*");
   timer     = posTimerCreate();
 
   gettimeofday(&tv, NULL);
@@ -144,7 +144,7 @@ static void sensorThread(void* arg)
 
     int historyMax = 0;
 
-    posSemaGet(timerSema);
+    nosSemaGet(timerSema);
 
     time(&now);
     ctime_r(&now, buf);
@@ -236,7 +236,7 @@ static void sensorThread(void* arg)
       randomSleep = sys_random() % MS(2000);
       posTaskSleep(randomSleep);
 
-      posSemaSignal(sendSema);
+      nosSemaSignal(sendSema);
     }
   }
 }
@@ -309,7 +309,7 @@ void sensorInit()
 
   owRelease(0);
 
-  sensorMutex = posMutexCreate();
+  sensorMutex = nosMutexCreate(0, "sensor");
 
   nosTaskCreate(sensorThread, NULL, 7, 1024, "OneWire");
   printf("OneWire OK.\n");
@@ -317,11 +317,11 @@ void sensorInit()
 
 void sensorLock()
 {
-  posMutexLock(sensorMutex);
+  nosMutexLock(sensorMutex);
 }
 
 void sensorUnlock()
 {
-  posMutexUnlock(sensorMutex);
+  nosMutexUnlock(sensorMutex);
 }
 
