@@ -44,7 +44,6 @@ const BusConf spi1BusConf = {
   .base = {
     .init    = spiInit,
     .cs      = spiCs,
-    .control = spiControl,
     .xchg    = spiXchg,
   },
   .spi = SPI1

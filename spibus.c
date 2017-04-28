@@ -105,24 +105,6 @@ void spiInit(struct uosSpiBus* bus)
   }
 }
 
-void spiControl(struct uosSpiBus* bus, bool highSpeed)
-{
-  BusConf* cf = (BusConf*)bus->cf;
-
-  SPI_InitTypeDef SPI_InitStructure;
-
-  SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-  SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-  SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-  SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
-  SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
-  SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-  SPI_InitStructure.SPI_BaudRatePrescaler = highSpeed ? SPI_BaudRatePrescaler_64 : SPI_BaudRatePrescaler_256;
-  SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-  SPI_InitStructure.SPI_CRCPolynomial = 7;
-  SPI_Init(cf->spi, &SPI_InitStructure);
-}
-
 void spiCs(struct uosSpiBus* bus, bool select)
 {
   P_ASSERT("spiCsCurrentSet", bus->currentDev != NULL);

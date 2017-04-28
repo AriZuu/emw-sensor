@@ -50,7 +50,6 @@ extern UosFlashDev flashDev;
 
 void    spiInit(struct uosSpiBus* bus);
 void    spiCs(struct uosSpiBus* bus, bool select);
-void    spiControl(struct uosSpiBus* bus, bool highSpeed);
 uint8_t spiXchg(const struct uosSpiBus* bus, uint8_t data);
 
 void devTreeInit(void);
