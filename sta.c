@@ -395,7 +395,7 @@ const EshCommand *eshCommandList[] = {
   &staCommand,
   &wrCommand,
   &clearCommand,
-#if defined(POS_DEBUGHELP) && POSCFG_ARGCHECK > 1
+#if defined(POS_DEBUGHELP) || NOSCFG_FEATURE_REGISTRY
   &eshTsCommand,
   &eshEsCommand,
 #endif
