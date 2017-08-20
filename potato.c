@@ -390,6 +390,8 @@ bool potatoSend()
 
 #endif
 
+  ADC_Cmd(ADC1, ENABLE); // Enable ADC now so it has time to settle.
+
   status = pbConnectURL(&client, server, &connectArgs);
   if (status < 0) {
 
@@ -411,6 +413,8 @@ bool potatoSend()
 
   PbPublish pub = {};
 
+  // Update battery reading with Wifi on status.
+  updateLastBatteryReading();
   if (buildJson(location)) {
 
     pub.message = (uint8_t*)jsonBuf;

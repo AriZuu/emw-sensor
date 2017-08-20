@@ -71,6 +71,7 @@ void waitSystemTime(void);
 void sensorInit(void);
 void sensorLock(void);
 void sensorUnlock(void);
+void updateLastBatteryReading(void);
 void sensorAddressStr(char* buf, uint8_t* addr);
 void sensorCycleReset(const struct timeval* tv);
 

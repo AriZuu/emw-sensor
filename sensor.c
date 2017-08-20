@@ -120,6 +120,16 @@ static void readBattery()
 
   battery = result * 3.3 / 256;
   logPrintf ("Battery         = %f V\n", battery);
+  ADC_Cmd(ADC1, DISABLE);
+}
+
+void updateLastBatteryReading()
+{
+  Sensor* sensor;
+
+  readBattery();
+  sensor = sensorList;
+  sensor->temperature[sensor->historyCount - 1] = battery;
 }
 
 static void sensorThread(void* arg)
@@ -202,7 +212,6 @@ static void sensorThread(void* arg)
     owRelease(0);
 
     readBattery();
-    ADC_Cmd(ADC1, DISABLE);
 
     sensor = sensorList;
     sensorLock();
