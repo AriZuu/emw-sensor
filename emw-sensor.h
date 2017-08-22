@@ -65,13 +65,14 @@ void flashPowerdown(void);
 void flashPowerup(void);
 void logPrintf(const char* fmt, ...);
 int  getUptime(void);
+int  getLastCycleTime(void);
 
 void waitSystemTime(void);
 
 void sensorInit(void);
 void sensorLock(void);
 void sensorUnlock(void);
-void updateLastBatteryReading(void);
+bool updateLastBatteryReading(void);
 void sensorAddressStr(char* buf, uint8_t* addr);
 void sensorCycleReset(const struct timeval* tv);
 

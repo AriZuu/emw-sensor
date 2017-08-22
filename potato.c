@@ -331,20 +331,31 @@ static bool buildJson(const char* location)
       jsonWriteKey(s, "uptime");
       jsonWriteInteger(s, getUptime());
 
-      sensor = sensorList;
+      int lct = getLastCycleTime();
 
-      jsonWriteKey(s, "battery");
+      if (lct > 0) {
 
-      {
-        JsonNode* values;
-        int i;
+        jsonWriteKey(s, "cycleTime");
+        jsonWriteInteger(s, lct);
+      }
 
-        values = jsonStartArray(s);
+      // Update battery reading with Wifi on status.
+      if (updateLastBatteryReading()) {
 
-        for (i = 0; i < sensor->historyCount; i++)
-          jsonWriteDouble(values, sensor->temperature[i]);
+        sensor = sensorList;
+        jsonWriteKey(s, "battery");
 
-        sensor->historyCount = 0;
+        {
+          JsonNode* values;
+          int i;
+
+          values = jsonStartArray(s);
+
+          for (i = 0; i < sensor->historyCount; i++)
+            jsonWriteDouble(values, sensor->temperature[i]);
+
+          sensor->historyCount = 0;
+        }
       }
     }
   }
@@ -413,8 +424,6 @@ bool potatoSend()
 
   PbPublish pub = {};
 
-  // Update battery reading with Wifi on status.
-  updateLastBatteryReading();
   if (buildJson(location)) {
 
     pub.message = (uint8_t*)jsonBuf;

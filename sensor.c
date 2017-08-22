@@ -123,13 +123,14 @@ static void readBattery()
   ADC_Cmd(ADC1, DISABLE);
 }
 
-void updateLastBatteryReading()
+bool updateLastBatteryReading()
 {
   Sensor* sensor;
 
   readBattery();
   sensor = sensorList;
   sensor->temperature[sensor->historyCount - 1] = battery;
+  return (battery > 0.1);
 }
 
 static void sensorThread(void* arg)

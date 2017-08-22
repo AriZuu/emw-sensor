@@ -192,6 +192,13 @@ bool timeOk()
   return (t > T_2017_01_01);
 }
 
+static VAR_t delta;
+
+int getLastCycleTime()
+{
+  return delta;
+}
+
 static void mainTask(void* arg)
 {
   sys_sem_t sem;
@@ -292,7 +299,6 @@ static void mainTask(void* arg)
   }
 
   UVAR_t start;
-  VAR_t delta;
   int retries = 0;
 
   sendSema = nosSemaCreate(0, 0, "send*");
