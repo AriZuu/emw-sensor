@@ -340,9 +340,9 @@ static bool buildJson(const char* location)
       }
 
       // Update battery reading with Wifi on status.
+      sensor = sensorList;
       if (updateLastBatteryReading()) {
 
-        sensor = sensorList;
         jsonWriteKey(s, "battery");
 
         {
@@ -357,6 +357,8 @@ static bool buildJson(const char* location)
           sensor->historyCount = 0;
         }
       }
+      else
+        sensor->historyCount = 0;
     }
   }
 
