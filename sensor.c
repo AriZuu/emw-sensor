@@ -105,12 +105,24 @@ void sensorCycleReset(const struct timeval* now)
 }
 
 float battery;
+static int adcFailures = 0;
 
 static void readBattery()
 {
   ADC_SoftwareStartConv(ADC1);
 
+  int timeout = 500;
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC ) == RESET) {
+
+    posTaskSleep(MS(1));
+    timeout -= 1;
+    if (timeout <= 0) {
+
+      ++adcFailures;
+      logPrintf("ADC timeout.\n");
+      battery = 0;
+      return;
+    }
   }
 
 
@@ -129,7 +141,12 @@ bool updateLastBatteryReading()
 
   readBattery();
   sensor = sensorList;
-  sensor->temperature[sensor->historyCount - 1] = battery;
+
+  if (sensor->historyCount == MAX_HISTORY)
+    sensor->historyCount--;
+
+  sensor->temperature[sensor->historyCount] = battery;
+  sensor->historyCount++;
   return (battery > 0.1);
 }
 
@@ -166,7 +183,8 @@ static void sensorThread(void* arg)
 
     sensorTime = now;
 
-    ADC_Cmd(ADC1, ENABLE); // Enable ADC now so it has time to settle.
+    if (!sendNeeded && !online)
+      ADC_Cmd(ADC1, ENABLE); // Enable ADC now so it has time to settle.
 
     if (!owAcquire(0, NULL)) {
 
@@ -212,29 +230,37 @@ static void sensorThread(void* arg)
 
     owRelease(0);
 
-    readBattery();
+    // Don't read battery if sending, it will
+    // be read after wifi is on to get reading with load.
+    if (!sendNeeded && !online) {
 
-    sensor = sensorList;
-    sensorLock();
-    if (sensor->historyCount >= MAX_HISTORY) {
+      readBattery();
+
+      sensor = sensorList;
+      sensorLock();
+      if (sensor->historyCount >= MAX_HISTORY) {
 
 #if MAX_HISTORY > 1
-      memmove(sensor->temperature, sensor->temperature + 1, (MAX_HISTORY - 1) * sizeof(double));
+        memmove(sensor->temperature, sensor->temperature + 1, (MAX_HISTORY - 1) * sizeof(double));
 #endif
-      sensor->historyCount--;
-      printf("Sensor history was full.\n");
+        sensor->historyCount--;
+        printf("Sensor history was full.\n");
+      }
+
+      sensor->temperature[sensor->historyCount++] = battery;
+      if (sensor->historyCount > historyMax)
+        historyMax = sensor->historyCount;
+
+      if (sensor->historyCount == MAX_HISTORY)
+        sendNeeded = true;
+
+      sensorUnlock();
     }
 
-    sensor->temperature[sensor->historyCount++] = battery;
-    if (sensor->historyCount > historyMax)
-      historyMax = sensor->historyCount;
-
-    if (sensor->historyCount == MAX_HISTORY)
-      sendNeeded = true;
-
-    sensorUnlock();
-
     if (online || sendNeeded) {
+
+      if (adcFailures > 0)
+        logPrintf("ADC failure count %d\n", adcFailures);
 
       int randomSleep;
 
@@ -321,8 +347,8 @@ void sensorInit()
 
   sensorMutex = nosMutexCreate(0, "sensor");
 
-  nosTaskCreate(sensorThread, NULL, 7, 1024, "OneWire");
-  printf("OneWire OK.\n");
+  nosTaskCreate(sensorThread, NULL, 6, 1024, "OneWire");
+  logPrintf("OneWire OK.\n");
 }
 
 void sensorLock()
