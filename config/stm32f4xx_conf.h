@@ -41,11 +41,13 @@
 #include "stm32f4xx_sdio.h"
 #include "stm32f4xx_spi.h"
 #include "stm32f4xx_wwdg.h"
+#include "stm32f4xx_iwdg.h"
 #include "stm32f4xx_rtc.h"
 #include "stm32f4xx_exti.h"
 #include "stm32f4xx_pwr.h"
 #include "stm32f4xx_flash.h"
 #include "stm32f4xx_adc.h"
+#include "stm32f4xx_dbgmcu.h"
 #include "misc.h"
 
 #define assert_param(expr) ((void)0)

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2016, Ari Suutari <ari@stonepile.fi>.
- * All rights reserved. 
+ * Copyright (c) 2017, Ari Suutari <ari@stonepile.fi>.
+ * All rights resered.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,59 +28,40 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <picoos-lwip.h>
-#include "lwip/netif.h"
+#include <picoos.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include "emw-sensor.h"
 
-#define MAX_SENSORS 2
+void watchdogDiag()
+{
+  // Check for watchdog reset.
+  if (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) != RESET) {
 
-#define MEAS_CYCLE_SECS (10 * 60)
-#define SEND_CYCLE_SECS (60 * 60)
+    printf("System reset by watchdog.\n");
+    RCC_ClearFlag();
+  }
+}
 
-#define MAX_HISTORY (1 + (SEND_CYCLE_SECS / MEAS_CYCLE_SECS))
+static void watchdogThread(void* arg)
+{
+  while (true) {
 
-typedef struct {
+    posTaskSleep(MS(10000));
+    IWDG_ReloadCounter();
+  }
+}
 
-  uint8_t addr[8];
-  int     historyCount;
-  double  temperature[MAX_HISTORY];
-} Sensor;
+void watchdogInit()
+{
+  IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+  IWDG_SetPrescaler(IWDG_Prescaler_256);
+  IWDG_SetReload(0xfff);
+  IWDG_ReloadCounter();
+  IWDG_Enable();
 
-#define T_2017_01_01 1483228800
+  DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP, ENABLE);
 
-bool timeOk(void);
-void initConfig(void);
-void potatoInit(void);
-bool potatoSend(void);
-void buttonInit(void);
-bool buttonRead(void);
-bool staUp(void);
-void staInit(void);
-void staDown(void);
-bool staIsAlwaysOnline(void);
-void setup(void);
-void ledInit(void);
-void wifiLed(bool on);
-void userLed(bool on);
-void flashPowerdown(void);
-void flashPowerup(void);
-void watchdogInit(void);
-void watchdogDiag(void);
-void logPrintf(const char* fmt, ...);
-int  getUptime(void);
-int  getLastCycleTime(void);
-
-void waitSystemTime(void);
-
-void sensorInit(void);
-void sensorLock(void);
-void sensorUnlock(void);
-bool updateLastBatteryReading(void);
-void sensorAddressStr(char* buf, uint8_t* addr);
-void sensorCycleReset(const struct timeval* tv);
-
-extern Sensor sensorList[];
-extern float battery;
-extern int    sensorCount;
-extern time_t sensorTime;
-extern POSSEMA_t sendSema;
+  nosTaskCreate(watchdogThread, NULL, 1, 512, "wdg");
+}
 

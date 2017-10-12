@@ -67,7 +67,8 @@ SRC_TXT =	 main.c \
                  spibus.c \
                  button.c \
                  sensor.c \
-                 potato.c 
+                 potato.c \
+                 watchdog.c
 
 SRC_HDR =  emw-sensor.h
 SRC_OBJ =

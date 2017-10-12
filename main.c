@@ -205,6 +205,7 @@ static void mainTask(void* arg)
 
   uosInit();
   uosBootDiag();
+  watchdogDiag();
   printf("lwIP %s WICED SDK %s\n", LWIP_VERSION_STRING, WICED_SDK_VERSION);
   devTreeInit();
 
@@ -297,6 +298,9 @@ static void mainTask(void* arg)
     userLed(false);
     posTaskSleep(MS(100));
   }
+
+  if (online)
+    watchdogInit();
 
   UVAR_t start;
   int retries = 0;
@@ -491,6 +495,6 @@ int main(int argc, char **argv)
   PWR->CR  &= ~PWR_CR_PDDS;
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
-  nosInit(mainTask, NULL, 1, 5120, 512);
+  nosInit(mainTask, NULL, 2, 5120, 512);
   return 0;
 }
