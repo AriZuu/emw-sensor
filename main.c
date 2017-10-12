@@ -289,7 +289,7 @@ static void mainTask(void* arg)
   if (online)
     eshStartTelnetd();
 
-  printf("Startup complete.\n");
+  logPrintf("Startup complete.\n");
 
   for (i = 0; i < 3; i++) {
 
