@@ -138,14 +138,13 @@ void setSystemTime(time_t t)
   // adjustment.
   if (abs(tv.tv_sec - t) > 1 || abs(t - lastNtp) > 3600 * 24) {
 
+    ctime_r(&t, buf);
+    logPrintf("Setting clock to %s", buf);
+
     lastNtp = t;
     tv.tv_sec = t;
     tv.tv_usec = 0;
     settimeofday(&tv, NULL);
-
-    gettimeofday(&tv, NULL);
-    ctime_r(&tv.tv_sec, buf);
-    printf("Clock set to %s", buf);
 
     sensorCycleReset(&tv);
   }
