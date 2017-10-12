@@ -389,7 +389,7 @@ static void mainTask(void* arg)
     retries = 0;
     delta = jiffies - start;
 
-    logPrintf("Cycle time %d.\n", delta);
+    logPrintf("Cycle time %d ms.\n", delta);
     uosResourceDiag();
   }
 }

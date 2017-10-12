@@ -443,7 +443,6 @@ bool potatoSend()
   }
 
   pbDisconnect(&client);
-  logPrintf("Data sent.\n");
   return true;
 }
 
