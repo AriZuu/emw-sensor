@@ -308,6 +308,13 @@ static void mainTask(void* arg)
   sendSema = nosSemaCreate(0, 0, "send*");
   while (1) {
 
+    if (retries > 10) {
+
+      printf("Too many send failures. Resetting system.\n");
+      posTaskSleep(MS(2000));
+      NVIC_SystemReset();
+    }
+
     if (online) {
 
       nosSemaGet(sendSema);
@@ -380,14 +387,6 @@ static void mainTask(void* arg)
 
     userLed(false);
     retries = 0;
-
-    if (retries > 10) {
-
-      printf("Too many send failures. Resetting system.\n");
-      posTaskSleep(MS(2000));
-      NVIC_SystemReset();
-    }
-
     delta = jiffies - start;
 
     logPrintf("Cycle time %d.\n", delta);
