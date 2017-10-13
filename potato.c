@@ -340,25 +340,32 @@ static bool buildJson(const char* location)
       }
 
       // Update battery reading with Wifi on status.
+      updateLastBatteryReading();
+
+      // Check if we have battery at all
+      bool haveBattery = false;
+      int i;
+
       sensor = sensorList;
-      if (updateLastBatteryReading()) {
+      for (i = 0; !haveBattery && i < sensor->historyCount; i++)
+        haveBattery = isValidBattery(sensor->temperature[i]);
+
+      sensor = sensorList;
+      if (haveBattery) {
 
         jsonWriteKey(s, "battery");
 
         {
           JsonNode* values;
-          int i;
 
           values = jsonStartArray(s);
 
           for (i = 0; i < sensor->historyCount; i++)
             jsonWriteDouble(values, sensor->temperature[i]);
-
-          sensor->historyCount = 0;
         }
       }
-      else
-        sensor->historyCount = 0;
+
+      sensor->historyCount = 0;
     }
   }
 

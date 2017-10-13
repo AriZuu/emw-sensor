@@ -107,6 +107,11 @@ void sensorCycleReset(const struct timeval* now)
 float battery;
 static int adcFailures = 0;
 
+bool isValidBattery(double v)
+{
+  return v > 0.1;
+}
+
 static void readBattery()
 {
   ADC_SoftwareStartConv(ADC1);
@@ -120,7 +125,7 @@ static void readBattery()
 
       ++adcFailures;
       logPrintf("ADC timeout.\n");
-      battery = 0;
+      battery = -1;
       return;
     }
   }
@@ -131,11 +136,13 @@ static void readBattery()
   result = ADC_GetConversionValue(ADC1);
 
   battery = result * 3.3 / 256;
-  logPrintf ("Battery         = %f V\n", battery);
+  if (isValidBattery(battery))
+    logPrintf ("Battery         = %f V\n", battery);
+
   ADC_Cmd(ADC1, DISABLE);
 }
 
-bool updateLastBatteryReading()
+void updateLastBatteryReading()
 {
   Sensor* sensor;
 
@@ -147,7 +154,6 @@ bool updateLastBatteryReading()
 
   sensor->temperature[sensor->historyCount] = battery;
   sensor->historyCount++;
-  return (battery > 0.1);
 }
 
 static void sensorThread(void* arg)
