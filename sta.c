@@ -335,10 +335,12 @@ static int copyfw(EshContext* ctx)
   }
 
   int len;
+  int total = 0;
   char buf[128];
 
   while ((len = read(from, buf, sizeof(buf))) > 0) {
 
+    total += len;
     if (write(to, buf, len) != len) {
 
       eshPrintf(ctx, "Cannot write to /flash/" WDCFG_FIRMWARE ".\n");
@@ -346,6 +348,7 @@ static int copyfw(EshContext* ctx)
     }
   }
 
+  eshPrintf(ctx, "Wrote %d bytes of firmware.\n", total);
   close(from);
   close(to);
 
