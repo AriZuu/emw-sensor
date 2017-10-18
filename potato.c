@@ -303,11 +303,18 @@ static bool buildJson(const char* location)
         {
           JsonNode* values;
           int i;
+          float v;
 
           values = jsonStartArray(s);
 
-          for (i = 0; i < sensor->historyCount; i++)
-            jsonWriteDouble(values, sensor->temperature[i]);
+          for (i = 0; i < sensor->historyCount; i++) {
+
+            v = sensor->temperature[i];
+            if (v <= -272)
+              jsonWriteNull(values);
+            else
+              jsonWriteDouble(values, v);
+          }
 
           sensor->historyCount = 0;
         }
