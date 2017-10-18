@@ -62,6 +62,6 @@ void watchdogInit()
 
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP, ENABLE);
 
-  nosTaskCreate(watchdogThread, NULL, 1, 512, "wdg");
+  nosTaskCreate(watchdogThread, NULL, 1, 256, "wdg");
 }
 
