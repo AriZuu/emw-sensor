@@ -118,7 +118,7 @@ static void tcpipInitDone(void *arg)
     printf("WWD init error %d, retrying after some time.\n", result);
     posPowerEnableSleep();
     posTaskSleep(MS(10 * 60 * 1000));
-    posPowerDisableSleep();
+    NVIC_SystemReset();
   }
 
 
