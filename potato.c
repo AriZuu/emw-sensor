@@ -45,6 +45,8 @@
 #include "emw-sensor.h"
 #include "picoos-mbedtls.h"
 
+#if USE_MQTT
+
 extern wiced_mac_t   myMac;
 
 static PbClient client;
@@ -456,3 +458,4 @@ bool potatoSend()
   return true;
 }
 
+#endif

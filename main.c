@@ -202,7 +202,14 @@ int getLastCycleTime()
 
 static void sendValues()
 {
-  if (potatoSend())
+  bool ok = true;
+
+#if USE_MQTT
+  if (!potatoSend())
+    ok = false;
+#endif
+
+  if (ok)
     sensorClearHistory();
 }
 
@@ -290,7 +297,9 @@ static void mainTask(void* arg)
     if (!online)
       wwd_management_wifi_off();
 
+#if USE_MQTT
   potatoInit();
+#endif
   sensorInit();
 
   if (online)

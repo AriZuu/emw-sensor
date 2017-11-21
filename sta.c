@@ -386,7 +386,10 @@ const EshCommand clearCommand = {
   .handler = clear
 }; 
 
+#if USE_MQTT
 extern const EshCommand mqttCommand;
+#endif
+
 extern const EshCommand apCommand;
 extern const EshCommand resetCommand;
 
@@ -394,7 +397,9 @@ const EshCommand *eshCommandList[] = {
 #if BUNDLE_FIRMWARE
   &copyfwCommand,
 #endif
+#if USE_MQTT
   &mqttCommand,
+#endif
   &staCommand,
   &wrCommand,
   &clearCommand,
