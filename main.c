@@ -209,6 +209,10 @@ static void sendValues()
     ok = false;
 #endif
 
+#if USE_VERA
+  veraSend();
+#endif
+
   if (ok)
     sensorClearHistory();
 }

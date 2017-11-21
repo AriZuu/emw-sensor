@@ -390,6 +390,10 @@ const EshCommand clearCommand = {
 extern const EshCommand mqttCommand;
 #endif
 
+#if USE_VERA
+extern const EshCommand veraCommand;
+#endif
+
 extern const EshCommand apCommand;
 extern const EshCommand resetCommand;
 
@@ -399,6 +403,9 @@ const EshCommand *eshCommandList[] = {
 #endif
 #if USE_MQTT
   &mqttCommand,
+#endif
+#if USE_VERA
+  &veraCommand,
 #endif
   &staCommand,
   &wrCommand,

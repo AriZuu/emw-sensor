@@ -80,6 +80,8 @@ bool isValidBattery(double v);
 void sensorAddressStr(char* buf, uint8_t* addr);
 void sensorCycleReset(const struct timeval* tv);
 
+bool veraSend(void);
+
 extern Sensor sensorList[];
 extern float battery;
 extern int    sensorCount;

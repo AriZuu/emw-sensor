@@ -68,13 +68,14 @@ SRC_TXT =	 main.c \
                  button.c \
                  sensor.c \
                  potato.c \
+                 vera.c \
                  watchdog.c
 
 SRC_HDR =  emw-sensor.h
 SRC_OBJ =
 SRC_LIB = -lm
 DIR_USRINC = 
-CDEFINES += BUNDLE_FIRMWARE=$(BUNDLE_FIRMWARE) USE_MQTT=1
+CDEFINES += BUNDLE_FIRMWARE=$(BUNDLE_FIRMWARE) USE_MQTT=1  USE_VERA=1
 
 # CMSIS setup
 STM32_DEFINES = HSE_VALUE=26000000
