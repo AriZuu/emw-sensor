@@ -178,6 +178,7 @@ bool staUp()
 
   const char* ap = uosConfigGet("ap");
   const char* pass = uosConfigGet("pass");
+  const char* fixedNtp = uosConfigGet("ntp");
 
   if (ap[0] == '\0' || pass[0] == '\0') {
   
@@ -231,7 +232,13 @@ bool staUp()
 
   // Ensure that flag is not set yet
   nosFlagWait(sntpFlag, 0);
-  if (!ip_addr_isany(sntp_getserver(0))) {
+
+  if (fixedNtp != NULL && strlen(fixedNtp) > 0) {
+
+    sntp_setservername(0, fixedNtp);
+    tcpip_callback_with_block(sntpStartStop, (void*)true, true);
+  }
+  else if (!ip_addr_isany(sntp_getserver(0))) {
 
     tcpip_callback_with_block(sntpStartStop, (void*)true, true);
   }
@@ -258,6 +265,7 @@ static int sta(EshContext* ctx)
 {
   char* reset  = eshNamedArg(ctx, "reset", false);
   char* online = eshNamedArg(ctx, "online", false);
+  char* ntp = eshNamedArg(ctx, "ntp", false);
   char* ap;
   char* pass;
 
@@ -278,6 +286,7 @@ static int sta(EshContext* ctx)
     uosConfigSet("ap", "");
     uosConfigSet("pass", "");
     uosConfigSet("online", "");
+    uosConfigSet("ntp", "");
     return 0;
   }
 
@@ -288,6 +297,7 @@ static int sta(EshContext* ctx)
     return -1;
   }
 
+  uosConfigSet("ntp", ntp != NULL ? ntp : "");
   uosConfigSet("ap", ap);
   uosConfigSet("pass", pass);
 

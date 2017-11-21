@@ -91,6 +91,7 @@ void setSystemTime(time_t);
 
 #define SNTP_SET_SYSTEM_TIME(t) setSystemTime(t)
 #define LWIP_DHCP_GET_NTP_SRV 1
+#define SNTP_SERVER_DNS 1
 // need one more timeout for ntp
 #define MEMP_NUM_SYS_TIMEOUT 7
 
