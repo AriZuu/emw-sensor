@@ -200,7 +200,7 @@ int getLastCycleTime()
   return delta;
 }
 
-static void sendValues()
+static bool sendValues()
 {
   bool ok = true;
 
@@ -210,11 +210,14 @@ static void sendValues()
 #endif
 
 #if USE_VERA
-  veraSend();
+  if (!veraSend())
+    ok = false;
 #endif
 
   if (ok)
     sensorClearHistory();
+
+  return ok;
 }
 
 static void mainTask(void* arg)
@@ -324,6 +327,7 @@ static void mainTask(void* arg)
 
   UVAR_t start;
   int retries = 0;
+  bool sendOk;
 
   sendSema = nosSemaCreate(0, 0, "send*");
   while (1) {
@@ -375,7 +379,7 @@ static void mainTask(void* arg)
 
     if (online) {
 
-      sendValues();
+      sendOk = sendValues();
     }
     else {
 
@@ -384,13 +388,13 @@ static void mainTask(void* arg)
         // SSL/TLS needs time before it can work.
         // So wait for SNTP.
         waitSystemTime();
-        sendValues();
+        sendOk = sendValues();
       }
       else {
 
         // Time is already ok, so we can send data
         // and wait for clock update in parallel tasks.
-        sendValues();
+        sendOk = sendValues();
         waitSystemTime();
       }
     }
@@ -406,7 +410,9 @@ static void mainTask(void* arg)
     }
 
     userLed(false);
-    retries = 0;
+    if (sendOk)
+      retries = 0;
+
     delta = jiffies - start;
 
     logPrintf("Cycle time %d ms.\n", delta);
