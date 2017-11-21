@@ -27,7 +27,19 @@ esh> mqtt --server=mqtts://nnnnnn.iot.eu-west-1.amazonaws.com --topic=sensordata
 Certificates provided by Amazon should be placed into cert directory (in DER format) to be picked
 up by build.
 
-After that, reset the board.
+```
+esh> vera --server=http://your-vera-box:3480 --id=NN
+```
+
+NN is device id, which can be found from Vera device advanced configuration.
+ 
+After done with settings, reset the board:
+
+```
+esh> reset
+```
+
+It is also possible to transmit measurement to Vera home automation controller:
 
 GPIO connections:
 
