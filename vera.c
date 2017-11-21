@@ -122,7 +122,26 @@ bool veraSend()
   }
 
   *client.packet.end = '\0';
-  logPrintf("Vera response: %s\n", client.packet.start);
+  if (strcmp((const char*)client.packet.start, "OK"))
+    logPrintf("Vera response: %s\n", client.packet.start);
+
+  time_t t;
+
+  time(&t);
+  sprintf(url, "%s/data_request?id=variableset&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:HADevice1&Variable=LastUpdate&Value=%ld",
+               server, sensorId, t);
+
+  status = pbGet(&client, url, NULL);
+  if (status < 0) {
+
+    printf("vera: http get failed, error %d\n", status);
+    return false;
+  }
+
+  *client.packet.end = '\0';
+  if (strcmp((const char*)client.packet.start, "OK"))
+    logPrintf("Vera LastUpdate response: %s\n", client.packet.start);
+
   return true;
 }
 
