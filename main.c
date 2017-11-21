@@ -362,7 +362,7 @@ static void mainTask(void* arg)
 
     if (online) {
 
-      potatoSend();
+      sendValues();
     }
     else {
 
