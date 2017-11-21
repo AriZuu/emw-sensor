@@ -200,6 +200,12 @@ int getLastCycleTime()
   return delta;
 }
 
+static void sendValues()
+{
+  if (potatoSend())
+    sensorClearHistory();
+}
+
 static void mainTask(void* arg)
 {
   sys_sem_t sem;
@@ -365,13 +371,13 @@ static void mainTask(void* arg)
         // SSL/TLS needs time before it can work.
         // So wait for SNTP.
         waitSystemTime();
-        potatoSend();
+        sendValues();
       }
       else {
 
         // Time is already ok, so we can send data
         // and wait for clock update in parallel tasks.
-        potatoSend();
+        sendValues();
         waitSystemTime();
       }
     }

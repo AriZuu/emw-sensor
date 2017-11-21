@@ -74,6 +74,7 @@ void waitSystemTime(void);
 void sensorInit(void);
 void sensorLock(void);
 void sensorUnlock(void);
+void sensorClearHistory(void);
 void updateLastBatteryReading(void);
 bool isValidBattery(double v);
 void sensorAddressStr(char* buf, uint8_t* addr);

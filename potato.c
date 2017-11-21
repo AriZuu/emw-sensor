@@ -315,8 +315,6 @@ static bool buildJson(const char* location)
             else
               jsonWriteDouble(values, v);
           }
-
-          sensor->historyCount = 0;
         }
       }
     }
@@ -371,8 +369,6 @@ static bool buildJson(const char* location)
             jsonWriteDouble(values, sensor->temperature[i]);
         }
       }
-
-      sensor->historyCount = 0;
     }
   }
 

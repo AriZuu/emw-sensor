@@ -104,6 +104,16 @@ void sensorCycleReset(const struct timeval* now)
   posTimerStart(timer);
 }
 
+void sensorClearHistory()
+{
+  Sensor* sensor;
+  int ns;
+
+  sensor = sensorList;
+  for (ns = 0; ns < sensorCount; ns++, sensor++)
+    sensor->historyCount = 0;
+}
+
 float battery;
 static int adcFailures = 0;
 
