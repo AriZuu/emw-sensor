@@ -191,6 +191,7 @@ bool staUp()
 
     wifiLed(false);
     printf("Cannot turn wifi on, error %d.\n", result);
+    wwd_management_wifi_off();
     return false;
   }
 

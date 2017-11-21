@@ -116,6 +116,7 @@ static void tcpipInitDone(void *arg)
   while ((result = wwd_management_wifi_on(WICED_COUNTRY_FINLAND)) != WWD_SUCCESS) {
 
     printf("WWD init error %d, retrying after some time.\n", result);
+    wwd_management_wifi_off();
     posPowerEnableSleep();
     posTaskSleep(MS(10 * 60 * 1000));
     NVIC_SystemReset();
