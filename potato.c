@@ -393,11 +393,8 @@ bool potatoSend()
   if (location == NULL)
     location = "somewhere";
 
-  if (server == NULL) {
-
-    printf("No MQTT server configured.\n");
-    return false;
-  }
+  if (server == NULL)
+    return true;
 
 #if POTATO_TLS
 

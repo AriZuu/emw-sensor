@@ -102,11 +102,8 @@ bool veraSend()
   if (sensorCount < 2)
     return true;
 
-  if (server == NULL) {
-
-    printf("No VERA box configured.\n");
+  if (server == NULL)
     return true;
-  }
 
   Sensor* sensor = sensorList + 1;
 
