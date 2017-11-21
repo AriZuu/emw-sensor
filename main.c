@@ -113,7 +113,7 @@ static void tcpipInitDone(void *arg)
  * Bring WIFI up.
  */
   wwd_buffer_init(NULL);
-  while ((result = wwd_management_wifi_on(WICED_COUNTRY_FINLAND)) != WWD_SUCCESS) {
+  if ((result = wwd_management_wifi_on(WICED_COUNTRY_FINLAND)) != WWD_SUCCESS) {
 
     printf("WWD init error %d, retrying after some time.\n", result);
     wwd_management_wifi_off();
