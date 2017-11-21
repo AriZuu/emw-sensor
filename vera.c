@@ -114,7 +114,7 @@ bool veraSend()
     return true;
 
 
-  sprintf(url, "%s/data_request?id=variableset&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:TemperatureSensor1&Vaable=CurrentTemperature&Value=%.1f",
+  sprintf(url, "%s/data_request?id=variableset&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:TemperatureSensor1&Variable=CurrentTemperature&Value=%.1f",
                server, sensorId, sensor->temperature[sensor->historyCount - 1]);
 
   status = pbGet(&client, url, NULL);
