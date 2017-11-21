@@ -419,7 +419,7 @@ bool potatoSend()
 
   ADC_Cmd(ADC1, ENABLE); // Enable ADC now so it has time to settle.
 
-  status = pbConnectURL(&client, server, &connectArgs);
+  status = pbConnect(&client, server, &connectArgs);
   if (status < 0) {
 
     printf("potato: connect failed, error %d\n", status);
