@@ -8,7 +8,7 @@ to MQTT server.
 After loading the firmware to board, it is easiest to set up it
 by pressing the "setup" button during startup, which activates built-in
 access point (you'll see EMW3165nnnnnnn when scanning for APs). 
-Connect to access point and use telnet to log in to 192.168.1.1.
+Connect to access point and use telnet to log in to 192.168.0.1.
 In _esh_ prompt setup the system:
 
 ```
