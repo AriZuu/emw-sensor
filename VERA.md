@@ -22,9 +22,11 @@ After that, dig out device ID number from Vera:
 
 After that, configure emw-sensor:
 
+```
 esh> sta --online --ntp=pool.ntp.org wifinetworkname wifinetworkpass
 esh> vera --server=your.vera.ip.address --id=25
 esh> wr
 esh> reset
+```
 
 In 10 minutes, temperature value should appear in Vera UI.
