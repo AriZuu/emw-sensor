@@ -24,7 +24,7 @@ esh> exit
 Or, to publish data to Amazon IOT MQTT:
 
 ```
-esh> mqtt --server=mqtts://nnnnnn.iot.eu-west-1.amazonaws.com --topic=sensordata --location=kitchen
+esh> mqtt --server=mqtts://nnnnnn.iot.eu-west-1.amazonaws.com --topic=sensordata --node=kitchenNode
 ```
 
 Certificates provided by Amazon should be placed into cert directory (in DER format) to be picked
