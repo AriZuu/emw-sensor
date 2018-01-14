@@ -13,7 +13,10 @@ In _esh_ prompt setup the system:
 
 ```
 esh> sta ap-name ap-password
-esh> mqtt --server=mqtt://mqtt-server-fqdn --topic=sensordata --location=kitchen
+esh> mqtt --server=mqtt://mqtt-server-fqdn --topic=sensordata --node=kitchenNode
+esh> onewire
+28.4f61ab040000=22.1
+esh> onewire --address=28.4f61ab040000 --location=kitchen
 esh> wr
 esh> exit
 ```
@@ -30,7 +33,11 @@ up by build.
 It is also possible to transmit measurement to Vera home automation controller:
 
 ```
-esh> vera --server=http://your-vera-box:3480 --id=NN
+esh> vera --server=http://your-vera-box:3480
+esh> onewire
+28.4f61ab040000=22.1
+esh> onewire --address=28.4f61ab040000 --vera=NN
+esh> wr
 ```
 
 NN is device id, which can be found from Vera device advanced configuration.

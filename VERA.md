@@ -24,7 +24,10 @@ After that, configure emw-sensor:
 
 ```
 esh> sta --online --ntp=pool.ntp.org wifinetworkname wifinetworkpass
-esh> vera --server=http://your.vera.ip.address:3480 --id=25
+esh> vera --server=http://your.vera.ip.address:3480
+esh> onewire
+28.4f61ab040000=22.1
+esh> onewire --address=28.4f61ab040000 --vera=25
 esh> wr
 esh> reset
 ```
