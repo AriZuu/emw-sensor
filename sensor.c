@@ -38,17 +38,31 @@
 
 #include <picoos-ow.h>
 #include <temp10.h>
+#include <eshell.h>
 
-void sensorAddressStr(char* buf, uint8_t* addr)
+void owAddr2Str(char* buf, const uint8_t* addr)
 {
   int i;
 
   *buf = '\0';
-  sprintf(buf, "%02X.", (int)addr[0]);
+  sprintf(buf, "%02x.", (int)addr[0]);
+  for (i = 1; i < 7; i++)
+    sprintf(buf + strlen(buf), "%02x", (int)addr[i]);
+}
+
+void owStr2Addr(uint8_t* addr, const char* buf)
+{
+  char work[3];
+  int  i;
+
+  strlcpy(work, buf, 3);
+  addr[0] = strtol(work, NULL, 16);
+
   for (i = 1; i < 7; i++) {
 
-    sprintf(buf + strlen(buf), "%02X", (int)addr[i]);
-   }
+    strlcpy(work, buf + 1 + 2 * i, 3);
+    addr[i] = strtol(work, NULL, 16);
+  }
 }
 
 static POSMUTEX_t sensorMutex;
@@ -83,6 +97,28 @@ static Sensor* getSensor(uint8_t* addr)
   memcpy(sensor->addr, addr, sizeof(sensor->addr));
   sensorCount++;
   sensor->historyCount = 0;
+
+  char serialStr[20];
+  char key[36];
+  const char* val;
+  owAddr2Str(serialStr, addr);
+
+#if USE_MQTT
+  strcpy(key, "ol.");
+  strcat(key, serialStr);
+  val = uosConfigGet(key);
+  if (val != NULL)
+    sensor->location = val;
+#endif
+
+#if USE_VERA
+  strcpy(key, "ov.");
+  strcat(key, serialStr);
+  val = uosConfigGet(key);
+  if (val != NULL)
+    sensor->veraId = strtol(val, NULL, 10);
+#endif
+
   sensorUnlock();
  
   return sensor;
@@ -219,8 +255,17 @@ static void sensorThread(void* arg)
       if (!ReadTemperature(0, serialNum, &value) || value >= 85.0)
         value = -273;
 
-      sensorAddressStr(buf, serialNum);
+      owAddr2Str(buf, serialNum);
+
+#if USE_MQTT && USE_VERA
+      logPrintf("%s = %f [%s] #%d\n", buf, value, sensor->location ? sensor->location : "", sensor->veraId);
+#elif USE_MQTT
+      logPrintf("%s = %f [%s]\n", buf, value, sensor->location ? sensor->location : "");
+#elif USE_VERA
+      logPrintf("%s = %f #%d\n", buf, value, sensor->veraId);
+#else
       logPrintf("%s = %f\n", buf, value);
+#endif
 
       sensorLock();
       if (sensor->historyCount >= MAX_HISTORY) {
@@ -376,4 +421,90 @@ void sensorUnlock()
 {
   nosMutexUnlock(sensorMutex);
 }
+
+static int onewire(EshContext * ctx)
+{
+  char* location = eshNamedArg(ctx, "location", false);
+  char* vera = eshNamedArg(ctx, "vera", false);
+  char* address = eshNamedArg(ctx, "address", false);
+
+  eshCheckNamedArgsUsed(ctx);
+  eshCheckArgsUsed(ctx);
+  if (eshArgError(ctx) != EshOK)
+    return -1;
+
+  char key[36];
+
+  if (location || address || vera) {
+
+    if (address == NULL || (location == NULL && vera == NULL)) {
+
+      eshPrintf(ctx, "--address and --location or --vera required.\n");
+      return -1;
+    }
+
+    if (location != NULL) {
+
+      snprintf(key, sizeof(key), "ol.%s", address);
+      uosConfigSet(key, location);
+    }
+
+    if (vera != NULL) {
+
+      snprintf(key, sizeof(key), "ov.%s", address);
+      uosConfigSet(key, vera);
+    }
+
+    return 0;
+  }
+
+  int   rslt;
+  uint8_t serialNum[8];
+  char serialStr[36];
+  float value;
+  const char* loc;
+
+  if (!owAcquire(0, NULL)) {
+
+    eshPrintf(ctx, "owAcquire failed.\n");
+    return -1;
+  }
+
+  rslt = owFirst(0, TRUE, FALSE);
+
+  while (rslt) {
+
+    owSerialNum(0, serialNum, TRUE);
+
+    owAddr2Str(serialStr, serialNum);
+    eshPrintf(ctx, "%s", serialStr);
+    ReadTemperature(0, serialNum, &value);
+    eshPrintf(ctx, "=%1.1f", value);
+
+    strcpy(key, "ol.");
+    strcat(key, serialStr);
+    loc = uosConfigGet(key);
+    if (loc != NULL)
+      eshPrintf(ctx, " [%s]", loc);
+
+    strcpy(key, "ov.");
+    strcat(key, serialStr);
+    loc = uosConfigGet(key);
+    if (loc != NULL)
+      eshPrintf(ctx, " #%s", loc);
+
+    eshPrintf(ctx, "\n");
+    rslt = owNext(0, TRUE, FALSE);
+  }
+
+  owRelease(0);
+  return 0;
+}
+
+const EshCommand onewireCommand = {
+  .flags = 0,
+  .name = "onewire",
+  .help = "list onewire bus, map location (--location=,--address=)",
+  .handler = onewire
+};
 

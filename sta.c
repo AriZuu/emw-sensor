@@ -406,6 +406,7 @@ extern const EshCommand veraCommand;
 
 extern const EshCommand apCommand;
 extern const EshCommand resetCommand;
+extern const EshCommand onewireCommand;
 
 const EshCommand *eshCommandList[] = {
 #if BUNDLE_FIRMWARE
@@ -424,12 +425,12 @@ const EshCommand *eshCommandList[] = {
   &eshTsCommand,
   &eshEsCommand,
 #endif
-  &eshOnewireCommand,
   &eshPingCommand,
   &eshIfconfigCommand,
   &eshHelpCommand,
   &eshExitCommand,
   &resetCommand,
+  &onewireCommand,
   NULL
 };
 

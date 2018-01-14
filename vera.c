@@ -55,7 +55,6 @@ static PbClient client;
 static int vera(EshContext* ctx)
 {
   char* server   = eshNamedArg(ctx, "server", false);
-  char* sensorId    = eshNamedArg(ctx, "id", false);
 
   eshCheckNamedArgsUsed(ctx);
   eshCheckArgsUsed(ctx);
@@ -65,19 +64,12 @@ static int vera(EshContext* ctx)
   if (server != NULL)
     uosConfigSet("vera.server", server);
 
-  if (sensorId != NULL)
-    uosConfigSet("vera.sensorId", sensorId);
-
-  if (sensorId == NULL && server == NULL) {
+  if (server == NULL) {
 
     const char* parm;
 
     parm = uosConfigGet("vera.server");
     eshPrintf(ctx, "Server: %s\n", parm ? parm : "<not set>");
-
-    parm = uosConfigGet("vera.sensorId");
-    eshPrintf(ctx, "Sensor ID: %s\n", parm ? parm : "<not set>");
-
   }
 
   return 0;
@@ -95,52 +87,51 @@ static char url[256];
 bool veraSend()
 {
   const char* server = uosConfigGet("vera.server");
-  const char* sensorId  = uosConfigGet("vera.sensorId");
   int   status;
-  
-  // Handle only first temperature. If there isn't one, we're done.
-  if (sensorCount < 2)
-    return true;
+  Sensor* sensor;
+  int ns;
+  time_t t;
 
   if (server == NULL)
     return true;
 
-  Sensor* sensor = sensorList + 1;
-
-  if (sensor->historyCount == 0)
-    return true;
-
-
-  sprintf(url, "%s/data_request?id=variableset&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:TemperatureSensor1&Variable=CurrentTemperature&Value=%.1f",
-               server, sensorId, sensor->temperature[sensor->historyCount - 1]);
-
-  status = pbGet(&client, url, NULL);
-  if (status < 0) {
-
-    printf("vera: http get failed, error %d\n", status);
-    return false;
-  }
-
-  *client.packet.end = '\0';
-  if (strcmp((const char*)client.packet.start, "OK"))
-    logPrintf("Vera response: %s\n", client.packet.start);
-
-  time_t t;
-
   time(&t);
-  sprintf(url, "%s/data_request?id=variableset&DeviceNum=%s&serviceId=urn:upnp-org:serviceId:HADevice1&Variable=LastUpdate&Value=%ld",
-               server, sensorId, t);
 
-  status = pbGet(&client, url, NULL);
-  if (status < 0) {
+  sensor = sensorList + 1;
+  for (ns = 1; ns < sensorCount; ns++, sensor++) {
 
-    printf("vera: http get failed, error %d\n", status);
-    return false;
+    if (sensor->historyCount == 0 || sensor->veraId == 0)
+      continue;
+
+
+    sprintf(url, "%s/data_request?id=variableset&DeviceNum=%d&serviceId=urn:upnp-org:serviceId:TemperatureSensor1&Variable=CurrentTemperature&Value=%.1f",
+                 server, sensor->veraId, sensor->temperature[sensor->historyCount - 1]);
+
+    status = pbGet(&client, url, NULL);
+    if (status < 0) {
+
+      printf("vera: http get failed, error %d\n", status);
+      return false;
+    }
+
+    *client.packet.end = '\0';
+    if (strcmp((const char*)client.packet.start, "OK"))
+      logPrintf("Vera response: %s\n", client.packet.start);
+
+    sprintf(url, "%s/data_request?id=variableset&DeviceNum=%d&serviceId=urn:upnp-org:serviceId:HADevice1&Variable=LastUpdate&Value=%ld",
+                 server, sensor->veraId, t);
+
+    status = pbGet(&client, url, NULL);
+    if (status < 0) {
+
+      printf("vera: http get failed, error %d\n", status);
+      return false;
+    }
+
+    *client.packet.end = '\0';
+    if (strcmp((const char*)client.packet.start, "OK"))
+      logPrintf("Vera LastUpdate response: %s\n", client.packet.start);
   }
-
-  *client.packet.end = '\0';
-  if (strcmp((const char*)client.packet.start, "OK"))
-    logPrintf("Vera LastUpdate response: %s\n", client.packet.start);
 
   return true;
 }

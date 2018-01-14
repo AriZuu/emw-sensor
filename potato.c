@@ -57,7 +57,7 @@ static PbClient client;
 static int mqtt(EshContext* ctx)
 {
   char* server   = eshNamedArg(ctx, "server", false);
-  char* location = eshNamedArg(ctx, "location", false);
+  char* node     = eshNamedArg(ctx, "node", false);
   char* topic    = eshNamedArg(ctx, "topic", false);
 
   eshCheckNamedArgsUsed(ctx);
@@ -68,13 +68,13 @@ static int mqtt(EshContext* ctx)
   if (server != NULL)
     uosConfigSet("mqtt.server", server);
 
-  if (location != NULL)
-    uosConfigSet("mqtt.location", location);
+  if (node != NULL)
+    uosConfigSet("mqtt.node", node);
 
   if (topic != NULL)
     uosConfigSet("mqtt.topic", topic);
 
-  if (topic == NULL && location == NULL && server == NULL) {
+  if (topic == NULL && node == NULL && server == NULL) {
 
     const char* parm;
 
@@ -82,10 +82,10 @@ static int mqtt(EshContext* ctx)
     eshPrintf(ctx, "Server: %s\n", parm ? parm : "<not set>");
 
     parm = uosConfigGet("mqtt.topic");
-    eshPrintf(ctx, "Topic prefix: %s\n", parm ? parm : "<not set>");
+    eshPrintf(ctx, "Topic: %s\n", parm ? parm : "<not set>");
 
-    parm = uosConfigGet("mqtt.location");
-    eshPrintf(ctx, "Location: %s\n", parm ? parm : "<not set>");
+    parm = uosConfigGet("mqtt.node");
+    eshPrintf(ctx, "Node: %s\n", parm ? parm : "<not set>");
   }
   return 0;
 }
@@ -93,7 +93,7 @@ static int mqtt(EshContext* ctx)
 const EshCommand mqttCommand = {
   .flags = 0,
   .name = "mqtt",
-  .help = "--server servername --topic topic-prefix --location location-id configure mqtt client",
+  .help = "--server mqtt(s)://servername --topic=topic --node=nodeLocation --vera=id configure mqtt client",
   .handler = mqtt
 }; 
 
@@ -250,7 +250,7 @@ static void tlsInit()
 static char jsonBuf[1024];
 static JsonContext jsonCtx;
 
-static bool buildJson(const char* location)
+static bool buildJson(const char* nodeLocation)
 {
   JsonNode* root;
   char      timeStamp[40];
@@ -283,18 +283,22 @@ static bool buildJson(const char* location)
 
   {
     JsonNode* locations;
+    Sensor* sensor;
+    int ns;
 
     locations = jsonStartObject(top);
-    jsonWriteKey(locations, location);
+    sensor = sensorList + 1;
+    for (ns = 1; ns < sensorCount; ns++, sensor++) {
 
-    {
-      JsonNode* s;
-      Sensor* sensor;
-      int ns;
+      if (sensor->location == NULL || sensor->location[0] == '\0')
+        continue;
 
-      s = jsonStartObject(locations);
-      sensor = sensorList + 1;
-      for (ns = 1; ns < sensorCount; ns++, sensor++) {
+      jsonWriteKey(locations, sensor->location);
+
+      {
+        JsonNode* s;
+
+        s = jsonStartObject(locations);
 
         strcpy(name, "temperature");
         if (ns > 1)
@@ -321,54 +325,54 @@ static bool buildJson(const char* location)
       }
     }
 
-    strcpy(name, location);
-    strcat(name, "Node");
-    jsonWriteKey(locations, name);
+    if (nodeLocation != NULL) {
 
-    {
-      JsonNode* s;
-      Sensor* sensor;
+      jsonWriteKey(locations, nodeLocation);
 
-      s = jsonStartObject(locations);
+      {
+        JsonNode* s;
 
-      jsonWriteKey(s, "rssi");
-      jsonWriteInteger(s, rssi);
-      jsonWriteKey(s, "noise");
-      jsonWriteInteger(s, noise);
-      jsonWriteKey(s, "uptime");
-      jsonWriteInteger(s, getUptime());
+        s = jsonStartObject(locations);
 
-      int lct = getLastCycleTime();
+        jsonWriteKey(s, "rssi");
+        jsonWriteInteger(s, rssi);
+        jsonWriteKey(s, "noise");
+        jsonWriteInteger(s, noise);
+        jsonWriteKey(s, "uptime");
+        jsonWriteInteger(s, getUptime());
 
-      if (lct > 0) {
+        int lct = getLastCycleTime();
 
-        jsonWriteKey(s, "cycleTime");
-        jsonWriteInteger(s, lct);
-      }
+        if (lct > 0) {
 
-      // Update battery reading with Wifi on status.
-      updateLastBatteryReading();
+          jsonWriteKey(s, "cycleTime");
+          jsonWriteInteger(s, lct);
+        }
 
-      // Check if we have battery at all
-      bool haveBattery = false;
-      int i;
+        // Update battery reading with Wifi on status.
+        updateLastBatteryReading();
 
-      sensor = sensorList;
-      for (i = 0; !haveBattery && i < sensor->historyCount; i++)
-        haveBattery = isValidBattery(sensor->temperature[i]);
+        // Check if we have battery at all
+        bool haveBattery = false;
+        int i;
 
-      sensor = sensorList;
-      if (haveBattery) {
+        sensor = sensorList;
+        for (i = 0; !haveBattery && i < sensor->historyCount; i++)
+          haveBattery = isValidBattery(sensor->temperature[i]);
 
-        jsonWriteKey(s, "battery");
+        sensor = sensorList;
+        if (haveBattery) {
 
-        {
-          JsonNode* values;
+          jsonWriteKey(s, "battery");
 
-          values = jsonStartArray(s);
+          {
+            JsonNode* values;
 
-          for (i = 0; i < sensor->historyCount; i++)
-            jsonWriteDouble(values, sensor->temperature[i]);
+            values = jsonStartArray(s);
+
+            for (i = 0; i < sensor->historyCount; i++)
+              jsonWriteDouble(values, sensor->temperature[i]);
+          }
         }
       }
     }
@@ -386,13 +390,10 @@ bool potatoSend()
 {
   const char* server = uosConfigGet("mqtt.server");
   const char* topic  = uosConfigGet("mqtt.topic");
-  const char* location = (char*)uosConfigGet("mqtt.location");
+  const char* nodeLocation = (char*)uosConfigGet("mqtt.node");
   char addr[80];
   int   status;
   
-  if (location == NULL)
-    location = "somewhere";
-
   if (server == NULL)
     return true;
 
@@ -435,7 +436,7 @@ bool potatoSend()
 
   PbPublish pub = {};
 
-  if (buildJson(location)) {
+  if (buildJson(nodeLocation)) {
 
     pub.message = (uint8_t*)jsonBuf;
     pub.len = strlen(jsonBuf);

@@ -40,9 +40,18 @@
 
 typedef struct {
 
-  uint8_t addr[8];
+  uint8_t addr[7];
   int     historyCount;
   double  temperature[MAX_HISTORY];
+
+#if USE_MQTT
+  const char* location;
+#endif
+
+#if USE_VERA
+  int veraId;
+#endif
+
 } Sensor;
 
 #define T_2017_01_01 1483228800
@@ -77,7 +86,8 @@ void sensorUnlock(void);
 void sensorClearHistory(void);
 void updateLastBatteryReading(void);
 bool isValidBattery(double v);
-void sensorAddressStr(char* buf, uint8_t* addr);
+void owAddr2Str(char* str, const uint8_t* addr);
+void owStr2Addr(uint8_t* addr, const char* str);
 void sensorCycleReset(const struct timeval* tv);
 
 bool veraSend(void);
