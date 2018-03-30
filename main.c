@@ -118,7 +118,7 @@ static void tcpipInitDone(void *arg)
     printf("WWD init error %d, retrying after some time.\n", result);
     wwd_management_wifi_off();
     posPowerEnableSleep();
-    posTaskSleep(MS(10 * 60 * 1000));
+    posTaskSleep(MS(30 * 60 * 1000));
     NVIC_SystemReset();
   }
 
