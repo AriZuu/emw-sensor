@@ -31,7 +31,7 @@
 #include <picoos-lwip.h>
 #include "lwip/netif.h"
 
-#define MAX_SENSORS 2
+#define MAX_SENSORS 3
 
 #define MEAS_CYCLE_SECS (10 * 60)
 #define SEND_CYCLE_SECS (60 * 60)
@@ -42,7 +42,7 @@ typedef struct {
 
   uint8_t addr[7];
   int     historyCount;
-  double  temperature[MAX_HISTORY];
+  float   temperature[MAX_HISTORY];
 
 #if USE_MQTT
   const char* location;
