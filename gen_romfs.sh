@@ -29,9 +29,19 @@
 
 if [ "$1" = "1" ]
 then
-	FILES="$WICED_SDK/resources/firmware/$WICED_CHIP/$WICED_CHIP$WICED_CHIP_REVISION.bin"
+	if [ "$#" -ge 2 ]
+	then
+		FILES="$2"
+	else
+		FILES="$WICED_SDK/resources/firmware/$WICED_CHIP/$WICED_CHIP$WICED_CHIP_REVISION.bin"
+	fi
 else
 	FILES=""
+fi
+
+if [ "$#" -ge 3 ]
+then
+	cd $3
 fi
 
 dd if=/dev/random of=cert/seedfile bs=64 count=1
