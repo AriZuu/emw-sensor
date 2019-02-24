@@ -37,7 +37,7 @@
                             							
                             <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.244213050" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
                             							
-                            <builder buildPath="/emw-sensor/build/Debug" id="de.marw.cdt.cmake.core.genscriptbuilder.1130546566" parallelBuildOn="false" superClass="de.marw.cdt.cmake.core.genscriptbuilder"/>
+                            <builder buildPath="/emw-sensor/build/Debug" id="de.marw.cdt.cmake.core.genscriptbuilder.1130546566" keepEnvironmentInBuildfile="false" name="CMake Builder (portable)" parallelBuildOn="true" parallelizationNumber="optimal" superClass="de.marw.cdt.cmake.core.genscriptbuilder"/>
                             							
                             <tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1057122528" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
                                 								
@@ -125,7 +125,7 @@
                             							
                             <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.241663540" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
                             							
-                            <builder buildPath="/emw-sensor/build/RelWithDebInfo" id="de.marw.cdt.cmake.core.genscriptbuilder.1972629437" keepEnvironmentInBuildfile="false" name="CMake Builder (portable)" parallelBuildOn="false" superClass="de.marw.cdt.cmake.core.genscriptbuilder"/>
+                            <builder buildPath="/emw-sensor/build/RelWithDebInfo" id="de.marw.cdt.cmake.core.genscriptbuilder.1972629437" keepEnvironmentInBuildfile="false" name="CMake Builder (portable)" parallelBuildOn="true" parallelizationNumber="optimal" superClass="de.marw.cdt.cmake.core.genscriptbuilder"/>
                             							
                             <tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.868537199" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
                                 								
@@ -180,28 +180,16 @@
             <storageModule buildDir="build/${ConfigName}" moduleId="de.marw.cdt.cmake.core.settings">
                 				
                 <linux command="cmake" generator="UnixMakefiles" use-default="true">
-                    					
-                    <defs/>
-                    					
-                    <undefs/>
-                    				
-                </linux>
+				</linux>
                 				
-                <win32 command="cmake" generator="MSYSMakefiles" use-default="true">
-                    					
-                    <defs/>
-                    					
-                    <undefs/>
-                    				
-                </win32>
+                <win32 command="cmake" generator="Ninja" use-default="true">
+				</win32>
                 				
                 <options/>
                 				
                 <defs>
                     					
                     <def name="CMAKE_BUILD_TYPE" type="STRING" val="RelWithDebInfo"/>
-                    					
-                    <def name="CMAKE_COLOR_MAKEFILE" type="BOOL" val="OFF"/>
                     				
                 </defs>
                 			
@@ -233,6 +221,12 @@
     	
     <storageModule moduleId="refreshScope" versionNumber="2">
         		
+        <configuration configurationName="RelWithDebInfo">
+            			
+            <resource resourceType="PROJECT" workspacePath="/emw-sensor"/>
+            		
+        </configuration>
+        		
         <configuration configurationName="Debug">
             			
             <resource resourceType="PROJECT" workspacePath="/emw-sensor"/>
@@ -240,5 +234,7 @@
         </configuration>
         	
     </storageModule>
+    	
+    <storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
     
 </cproject>
