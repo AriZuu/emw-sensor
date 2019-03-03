@@ -118,7 +118,7 @@ bool veraSend()
     if (strcmp((const char*)client.packet.start, "OK"))
       logPrintf("Vera response: %s\n", client.packet.start);
 
-    sprintf(url, "%s/data_request?id=variableset&DeviceNum=%d&serviceId=urn:upnp-org:serviceId:HADevice1&Variable=LastUpdate&Value=%ld",
+    sprintf(url, "%s/data_request?id=variableset&DeviceNum=%d&serviceId=urn:upnp-org:serviceId:HADevice1&Variable=LastUpdate&Value=%lld",
                  server, sensor->veraId, t);
 
     status = pbGet(&client, url, NULL);
