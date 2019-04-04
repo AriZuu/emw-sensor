@@ -32,6 +32,7 @@ cmake_minimum_required(VERSION 3.10)
 set(PORT cortex-m)
 set(CPU stm32)
 set(BUNDLE_FIRMWARE 1)
+set(POTATO_BUS_TLS 1)
 
 set(ROMFILES romfiles_${BUNDLE_FIRMWARE}.c)
 set(WICED_PLATFORM EMW3165)
